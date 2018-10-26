@@ -1,0 +1,20 @@
+<project name="albumish" default="jar">
+  <property name="MainClass" value="albumish.Jukebox"/>
+  <target name="jar" depends="compile">
+    <jar destfile="albumish.jar" basedir="bin">
+      <manifest>
+        <attribute name="Main-Class" value="${MainClass}"/>
+      </manifest>
+    </jar>
+  </target>
+  <target name="compile">
+    <mkdir dir="bin"/>
+    <javac debug="on" optimize="on" includeantruntime="false"
+	   classpath="lib/gson-2.4.jar;lib/imgscalr-lib-4.2.jar;lib/jaudiotagger-2.2.3.jar;lib/jl-1.0.1.jar;lib/jna-4.2.2.jar;lib/swt.jar"
+	   srcdir="src" destdir="bin">
+    </javac>
+    <copy todir="bin/albumish/icons">
+      <fileset dir="src/albumish/icons"/>
+    </copy>
+  </target>
+</project>
