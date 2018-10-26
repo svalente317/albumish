@@ -85,7 +85,6 @@ public class ImageConverter {
     }
 
     static ImageData convertToSWT(BufferedImage bufferedImage) {
-        ColorModel m = bufferedImage.getColorModel();
         if (bufferedImage.getColorModel() instanceof DirectColorModel) {
             DirectColorModel colorModel = (DirectColorModel) bufferedImage.getColorModel();
             PaletteData palette = new PaletteData(colorModel.getRedMask(),
