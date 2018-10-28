@@ -146,18 +146,20 @@ public class Utils {
      * Copy a file in the local file system.
      */
     public static void copy_file(File srcfile, File dstfile) {
-        FileChannel inputChannel = null;
-        FileChannel outputChannel = null;
+        FileInputStream istream = null;
+        FileOutputStream ostream = null;
         try {
-            inputChannel = new FileInputStream(srcfile).getChannel();
-            outputChannel = new FileOutputStream(dstfile).getChannel();
+            istream = new FileInputStream(srcfile);
+            ostream = new FileOutputStream(dstfile);
+            FileChannel inputChannel = istream.getChannel();
+            FileChannel outputChannel = ostream.getChannel();
             outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-            outputChannel.close();
-            inputChannel.close();
+            ostream.close();
+            istream.close();
         } catch (Exception exception) {
             System.err.println(exception.toString());
-            quietClose(outputChannel);
-            quietClose(inputChannel);
+            quietClose(ostream);
+            quietClose(istream);
         }
     }
 

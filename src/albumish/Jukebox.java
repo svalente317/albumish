@@ -15,6 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
@@ -42,9 +43,9 @@ public class Jukebox implements SelectionListener {
         EXPORT_SONGS
     };
 
-    static final int[] SMALL_SIZES = { 150, 200 };
-    static final int[] NORMAL_SIZES = { 225, 300 };
-    static final int[] BIG_SIZES = { 300, 400 };
+    // Draw unselected albums in a square of 225x225.
+    // Draw the selected album in a square of 300x300.
+    static int[] COVER_SIZES = { 225, 300 };
 
     private static final String RANDOM_PLAYLIST_PREFIX = "Random Playlist ";
     private static final int RANDOM_PLAYLIST_SIZE = 100;
@@ -74,6 +75,14 @@ public class Jukebox implements SelectionListener {
         // Initialize the non-graphical objects:
         // database, check_database, playlists, gallery, and filters.
         Display display = new Display();
+        Rectangle bounds = display.getBounds();
+        // If display width is 1920 or less, then use the normal album sizes.
+        // If display width is 3840 or more, then double the album sizes.
+        // If the display width is in between 1920 and 3840, then that's weird.
+        if (bounds.width >= 3840) {
+            COVER_SIZES[0] *= 2;
+            COVER_SIZES[1] *= 2;
+        }
         String home = System.getProperty("user.home");
         File directory = new File(home, ".albumish");
         this.database = new Database();
@@ -81,7 +90,7 @@ public class Jukebox implements SelectionListener {
         this.check_database = new CheckDatabase(this.database, directory, "checked_songs.list");
         this.playlists = new PlaylistCollection(this.database, directory);
         File gallery_dir = new File(home, "Pictures/covers");
-        this.gallery = new Gallery(this, display, gallery_dir, NORMAL_SIZES);
+        this.gallery = new Gallery(this, display, gallery_dir, COVER_SIZES);
         this.filter_worker = new FilterWorker(this.database, this.check_database);
 
         // Create the main window.
@@ -97,6 +106,7 @@ public class Jukebox implements SelectionListener {
         this.cover_panel = new CoverPanel(this, this.main_window);
         data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
         data.heightHint = this.cover_panel.get_height();
+        data.widthHint = bounds.width;
         this.cover_panel.setLayoutData(data);
         this.sort_panel = new SortPanel(this, this.main_window);
         data = new GridData(SWT.CENTER, SWT.BEGINNING, false, false);
@@ -109,7 +119,7 @@ public class Jukebox implements SelectionListener {
         this.album_song_panel.getControl().setLayoutData(data);
         this.playlist_panel = new PlaylistPanel(this, this.playlists);
         data = new GridData(SWT.FILL, SWT.FILL, false, true);
-        data.widthHint = 220;
+        data.heightHint = bounds.height / 5;
         this.playlist_panel.getControl().setLayoutData(data);
         this.main_window.pack();
         this.main_window.open();
