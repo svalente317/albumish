@@ -1,8 +1,6 @@
-- Time scale: drag backwards
 - Show ellipsis in FilterPanel
 - Drag and drop - playlists, songs, albums
 - Right click menu on songs and playlists
-- Correctly name new random playlist
 - Check All / Uncheck All
 
 CoverPanel

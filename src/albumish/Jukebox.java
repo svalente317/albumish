@@ -89,6 +89,7 @@ public class Jukebox implements SelectionListener {
         this.database.load(directory, "database.json");
         this.check_database = new CheckDatabase(this.database, directory, "checked_songs.list");
         this.playlists = new PlaylistCollection(this.database, directory);
+        this.num_random_playlists = this.playlists.get_max_with_prefix(RANDOM_PLAYLIST_PREFIX);
         File gallery_dir = new File(home, "Pictures/covers");
         this.gallery = new Gallery(this, display, gallery_dir, COVER_SIZES);
         this.filter_worker = new FilterWorker(this.database, this.check_database);

@@ -184,4 +184,24 @@ public class PlaylistCollection extends ArrayList<Playlist> {
         }
         Utils.quietClose(writer);
     }
+
+    /**
+     * Get the highest number where a playlist name is the given prefix plus a number.
+     */
+    public int get_max_with_prefix(String prefix) {
+        int max = 0;
+        int length = prefix.length();
+        for (Playlist playlist : this) {
+            if (playlist.name.startsWith(prefix)) {
+                try {
+                    int num = Integer.parseInt(playlist.name.substring(length));
+                    if (num > max) {
+                        max = num;
+                    }
+                } catch (Exception ignore) {
+                }
+            }
+        }
+        return max;
+    }
 }

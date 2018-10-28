@@ -9,6 +9,8 @@ package albumish;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javazoom.jl.decoder.Bitstream;
 import javazoom.jl.decoder.Decoder;
@@ -35,6 +37,14 @@ public class PlayerThread extends Thread {
     private float audio_position;
     private boolean is_paused;
     private Float target_position;
+
+    // Remember the samples that have been played so far, for rewind.
+    static class SampleBufferMs {
+        short[] data;
+        float ms;
+    }
+    private List<SampleBufferMs> samples;
+    private int next_sample;
 
     public PlayerThread(Jukebox jukebox) {
         this.jukebox = jukebox;
@@ -92,6 +102,8 @@ public class PlayerThread extends Thread {
                 this.interruption_count = 0;
             }
             this.audio_position = 0;
+            this.samples = new ArrayList<>();
+            this.next_sample = -1;
             try {
                 boolean value = true;
                 while (value && this.interruption_count == 0) {
@@ -107,7 +119,7 @@ public class PlayerThread extends Thread {
                         jump_in_audio_thread(this.target_position);
                         this.target_position = null;
                     }
-                    value = decodeFrame();
+                    value = decode_frame(true);
                 }
             } catch (Exception exception) {
                 System.err.println(exception.toString());
@@ -116,18 +128,35 @@ public class PlayerThread extends Thread {
             this.audio.close();
             Utils.quietClose(this.bitstream);
             Utils.quietClose(istream);
+            this.samples = null;
         }
     }
 
-    private boolean decodeFrame() throws Exception {
-        Header header = this.bitstream.readFrame();
-        if (header == null) {
-            return false;
+    private boolean decode_frame(boolean play) throws Exception {
+        SampleBufferMs sample;
+        if (this.next_sample >= 0) {
+            sample = this.samples.get(this.next_sample);
+            this.next_sample++;
+            if (this.next_sample == this.samples.size()) {
+                this.next_sample = -1;
+            }
+        } else {
+            Header header = this.bitstream.readFrame();
+            if (header == null) {
+                return false;
+            }
+            SampleBuffer output = (SampleBuffer) this.decoder.decodeFrame(header, this.bitstream);
+            sample = new SampleBufferMs();
+            sample.data = new short[output.getBufferLength()];
+            System.arraycopy(output.getBuffer(), 0, sample.data, 0, sample.data.length);
+            sample.ms = header.ms_per_frame();
+            this.bitstream.closeFrame();
+            this.samples.add(sample);
         }
-        SampleBuffer output = (SampleBuffer) this.decoder.decodeFrame(header, this.bitstream);
-        this.audio.write(output.getBuffer(), 0, output.getBufferLength());
-        this.bitstream.closeFrame();
-        this.audio_position += header.ms_per_frame();
+        if (play) {
+            this.audio.write(sample.data, 0, sample.data.length);
+        }
+        this.audio_position += sample.ms;
         return true;
     }
 
@@ -136,14 +165,14 @@ public class PlayerThread extends Thread {
      */
     private void jump_in_audio_thread(float target_position) throws Exception {
         this.audio.flush();
-        // TODO jump backwards
+        if (this.audio_position > target_position) {
+            this.audio_position = 0;
+            this.next_sample = 0;
+        }
         while (this.audio_position < target_position) {
-            Header header = this.bitstream.readFrame();
-            if (header == null) {
+            if (!decode_frame(false)) {
                 return;
             }
-            this.bitstream.closeFrame();
-            this.audio_position += header.ms_per_frame();
         }
     }
 
