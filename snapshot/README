@@ -1,0 +1,5 @@
+Snapshot of:
+git clone https://bitbucket.org/ijabz/jaudiotagger/src/master/
+
+Built on 2019-05-14 with:
+mvn package

@@ -44,7 +44,7 @@ public class JMBDiscId {
      */
     public synchronized boolean init(String path) throws Exception {
         if (libDiscId == null) {
-            libDiscId = (LibDiscId) Native.loadLibrary(path, LibDiscId.class);
+            libDiscId = (LibDiscId) Native.load(path, LibDiscId.class);
         }
         if (libDiscId != null && this.disc == null) {
             this.disc = libDiscId.discid_new();
