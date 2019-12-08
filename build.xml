@@ -8,17 +8,16 @@
     </jar>
   </target>
   <target name="compile">
-    <ivy:retrieve/>
+    <!-- ivy:retrieve/ -->
     <mkdir dir="bin"/>
     <javac debug="on" optimize="on" srcdir="src" destdir="bin"
            includeantruntime="false">
       <classpath>
         <pathelement location="/usr/share/java/swt4.jar"/>
+        <pathelement location="/usr/share/java/gson-2.8.5.jar"/>
+        <pathelement location="/usr/share/java/imgscalr-lib-4.2.jar"/>
+        <pathelement location="/usr/share/java/jl-1.0.1.jar"/>
         <pathelement location="snapshot/jaudiotagger-2.2.6-SNAPSHOT.jar"/>
-        <pathelement location="lib/gson-2.8.5.jar"/>
-        <pathelement location="lib/imgscalr-lib-4.2.jar"/>
-        <pathelement location="lib/jlayer-1.0.1.jar"/>
-        <pathelement location="lib/jna-5.3.1.jar"/>
       </classpath>
     </javac>
     <copy todir="bin/albumish/icons">

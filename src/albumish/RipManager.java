@@ -9,15 +9,9 @@ package albumish;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,10 +22,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class RipManager implements SelectionListener {
 
@@ -63,24 +53,8 @@ public class RipManager implements SelectionListener {
     }
 
     private void run_rip_manager() {
-        String url = null;
-        try {
-            JMBDiscId discId = new JMBDiscId();
-            discId.init("/usr/lib/x86_64-linux-gnu/libdiscid.so.0");
-            url = discId.getWebServiceUrl(null);
-            System.out.println("MusicBrainz url: " + url);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            return;
-        }
         final MbAlbum album = new MbAlbum();
-        // TODO try to get album metadata from cache
-        try {
-            get_musicbrainz_album(url, album);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            // Continue. The user can manually enter the album metadata.
-        }
+        album.tracklist = new String[] {"", "", ""};
         this.progress_dialog.close_and_run(new Runnable() {
             @Override
             public void run() {
@@ -88,69 +62,6 @@ public class RipManager implements SelectionListener {
                 open_album_metadata_dialog(album);
             }
         });
-    }
-
-    private void get_musicbrainz_album(String url, MbAlbum album) throws Exception {
-        this.progress_dialog.set_bottom_label("Downloading " + url + "...");
-        URLConnection connection = new URL(url).openConnection();
-        connection.connect();
-        InputStream istream = connection.getInputStream();
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(istream);
-        istream.close();
-
-        Element root = document.getDocumentElement();
-        Element releaseList = child(root, "release-list");
-        Element release = child(releaseList, "release");
-        Element title = child(release, "title");
-        album.name = text(title);
-        Element artist = child(release, "artist");
-        Element artist2 = child(artist, "name");
-        album.artist = text(artist2);
-        Element trackList = child(release, "track-list");
-        NodeList nodeList = trackList.getChildNodes();
-        int numTracks = nodeList.getLength();
-        album.tracklist = new String[numTracks];
-        for (int idx = 0; idx < numTracks; idx++) {
-            Element trackElem = (Element) nodeList.item(idx);
-            Element titleElem = child(trackElem, "title");
-            album.tracklist[idx] = text(titleElem);
-        }
-        Element eventList = child(release, "release-event-list");
-        nodeList = eventList.getChildNodes();
-        int numEvents = nodeList.getLength();
-        for (int idx = 0; idx < numEvents; idx++) {
-            Element eventElem = (Element) nodeList.item(idx);
-            String country = eventElem.getAttribute("country");
-            if ((country != null) && country.equals("US")) {
-                album.year = eventElem.getAttribute("date").substring(0, 4);
-                break;
-            }
-        }
-    }
-
-    private static Element child(Element element, String tag) {
-        if (element == null) {
-            return null;
-        }
-        NodeList nodeList = element.getChildNodes();
-        int count = nodeList.getLength();
-        for (int idx = 0; idx < count; idx++) {
-            Node child = nodeList.item(idx);
-            if (child instanceof Element) {
-                Element ce = (Element) child;
-                if (ce.getTagName().equals(tag)) {
-                    return ce;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static String text(Element element) {
-        String value = element.getFirstChild().getNodeValue();
-        return Utils.make_ascii(value);
     }
 
     private void open_album_metadata_dialog(MbAlbum album) {

@@ -20,12 +20,12 @@ jukebox application.)
 Albumish is a Java application. It uses SWT for graphics, and JLayer
 for MP3 processing, so it should run on all popular platforms.
 
-Albumish actually has six dependencies. In addition to SWT and JLayer,
-it requires `gson`, `imgscalr`, `jaudiogger`, and `jna`. Currently,
-you need to download all six of them, then tell `build.xml` where to
-find them so that you can compile albumish, and then tell
-`albumish.sh` where to find them so that you can run it. I guess I
-should use Maven?
+Albumish actually has four dependencies. In addition to SWT and
+JLayer, it requires `gson` and `imgscalr`. (It also requires
+`jaudiotagger`, but it is distributed with this library.)  Currently,
+you need to install all four of these as packages of your Linux
+distribution, or else download them and tell `build.xml` where to find
+them. I guess I should use Maven?
 
 ## Users Guide
 

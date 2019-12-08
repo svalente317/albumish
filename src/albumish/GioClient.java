@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -18,16 +19,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class use the CLI tooks gvfs-ls, etc. to provide a Java client library to read and write the
- * GVFS filesystem. Obviously, this is a bit hacky. It should be pretty easy to drop-in a real java
+ * This class use the "gio" CLI tool to provide a Java client library to read and write the GIO
+ * filesystem. Obviously, this is a bit hacky. It should be pretty easy to drop-in a real java
  * library, if such a library exists.
  */
-public class GvfsClient {
+public class GioClient {
+    private boolean use_gio;
+    private boolean use_gvfs;
+
+    public GioClient() {
+        if (new File("/usr/bin/gio").exists()) {
+            this.use_gio = true;
+        } else if (new File("/usr/bin/gvfs-ls").exists()) {
+            this.use_gvfs = true;
+        }
+    }
+
     /**
      * @return list of URIs for MTP devices
      */
-    public static String[] getMtpDeviceList() {
-        ProcessBuilder pb = new ProcessBuilder("gvfs-ls", "-c", "mtp://");
+    public String[] getMtpDeviceList() {
+        String[] command = null;
+        if (this.use_gio) {
+            command = new String[] {"gio", "mount", "-l"};
+        } else if (this.use_gvfs) {
+            command = new String[] {"gvfs-ls", "-c", "mtp://"};
+        } else {
+            return null;
+        }
+        ProcessBuilder pb = new ProcessBuilder(command);
         Process process;
         try {
             process = pb.start();
@@ -48,7 +68,17 @@ public class GvfsClient {
             if (line == null) {
                 break;
             }
-            results.add(line);
+            if (this.use_gio) {
+                String[] words = line.split(" ");
+                if (words.length == 4 && words[0].startsWith("Mount(") &&
+                        words[1].equals("mtp") && words[2].equals("->")) {
+                    try {
+                        results.add(URLDecoder.decode(words[3], "UTF-8"));
+                    } catch (Exception dummy) {}
+                }
+            } else {
+                results.add(line);
+            }
         }
         try {
             reader.close();
@@ -70,16 +100,16 @@ public class GvfsClient {
     }
 
     /**
-     * Read a directory in GVFS. Return its lists of files and subdirectories.
+     * Read a directory in GIO. Return its lists of files and subdirectories.
      */
-    public static void listDirectory(String rootUri, String directory, List<String> subdirs,
+    public void listDirectory(String rootUri, String directory, List<String> subdirs,
             List<FileInfo> files) {
         if (rootUri.startsWith("/")) {
             listRegularDirectory(rootUri, directory, subdirs, files);
             return;
         }
-        ProcessBuilder pb = new ProcessBuilder(
-                "gvfs-ls", "-a", "standard::size,time::modified", rootUri + "/" + directory);
+        ProcessBuilder pb = new ProcessBuilder(makeCommand("list",
+                "-a", "standard::size,time::modified", rootUri + "/" + directory));
         Process process;
         try {
             process = pb.start();
@@ -156,8 +186,8 @@ public class GvfsClient {
         }
     }
 
-    private static void listRegularDirectory(String rootUri, String directory,
-            List<String> subdirs, List<FileInfo> fileinfos) {
+    private void listRegularDirectory(String rootUri, String directory, List<String> subdirs,
+            List<FileInfo> fileinfos) {
         File[] files = new File(rootUri, directory).listFiles();
         if (files == null) {
             return;
@@ -181,9 +211,9 @@ public class GvfsClient {
     }
 
     /**
-     * Copy a file in GVFS.
+     * Copy a file in GIO.
      */
-    public static boolean copyFile(String srcUri, String dstUri) {
+    public boolean copyFile(String srcUri, String dstUri) {
         if (dstUri.startsWith("/")) {
             try {
                 Files.copy(Paths.get(srcUri), Paths.get(dstUri),
@@ -194,13 +224,13 @@ public class GvfsClient {
                 return false;
             }
         }
-        return runProcess("gvfs-copy", srcUri, dstUri);
+        return runProcess(makeCommand("copy", srcUri, dstUri));
     }
 
     /**
-     * Make a directory and its parent directories in GVFS.
+     * Make a directory and its parent directories in GIO.
      */
-    public static boolean makeDirectory(String srcUri) {
+    public boolean makeDirectory(String srcUri) {
         if (srcUri.startsWith("/")) {
             try {
                 Files.createDirectories(Paths.get(srcUri));
@@ -210,13 +240,13 @@ public class GvfsClient {
                 return false;
             }
         }
-        return runProcess("gvfs-mkdir", "-p", srcUri);
+        return runProcess(makeCommand("mkdir", "-p", srcUri));
     }
 
     /**
-     * Remove a file in GVFS.
+     * Remove a file in GIO.
      */
-    public static boolean removeFile(String dstUri) {
+    public boolean removeFile(String dstUri) {
         if (dstUri.startsWith("/")) {
             try {
                 Files.delete(Paths.get(dstUri));
@@ -226,10 +256,27 @@ public class GvfsClient {
                 return false;
             }
         }
-        return runProcess("gvfs-rm", dstUri);
+        return runProcess(makeCommand("remove", dstUri));
     }
 
-    private static boolean runProcess(String... args) {
+    private String[] makeCommand(String...args) {
+        List<String> list = new ArrayList<>();
+        for (String arg : args) {
+            list.add(arg);
+        }
+        if (this.use_gio) {
+            list.add(0, "gio");
+        } else if (this.use_gvfs) {
+            String c = args[0];
+            list.set(0, c.equals("list") ? "gvfs-ls" : c.equals("copy") ? "gvfs-cp" :
+                c.contentEquals("mkdir") ? "gvfs-mkdir" : c.equals("remove") ? "gvfs-rm" : null);
+        } else {
+            return null;
+        }
+        return list.toArray(new String[0]);
+    }
+
+    private boolean runProcess(String[] args) {
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
         try {

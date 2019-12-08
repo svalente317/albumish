@@ -22,12 +22,13 @@ import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.StandardArtwork;
 
-import albumish.GvfsClient.FileInfo;
+import albumish.GioClient.FileInfo;
 
 public class SyncManager {
     public static final String STORAGE_DIR = "Phone";
     public static final String MUSIC_DIR = "Music";
 
+    private GioClient gio;
     private Jukebox jukebox;
     private String user_home;
     private String musicUri;
@@ -52,9 +53,10 @@ public class SyncManager {
      * Start the process of syncing checked songs to device.
      */
     public void sync_to_device(Jukebox jukebox) {
+        this.gio = new GioClient();
         this.jukebox = jukebox;
         this.user_home = System.getProperty("user.home");
-        String[] device_uris = GvfsClient.getMtpDeviceList();
+        String[] device_uris = this.gio.getMtpDeviceList();
         if (device_uris == null || device_uris.length == 0) {
             sync_to_mounted_device();
             return;
@@ -78,6 +80,7 @@ public class SyncManager {
             }
         };
 
+        // TODO find mount point?
         new InputDialog(this.jukebox.main_window, "Sync to Device",
                 "Enter device mount point.", "/media/sal/MUSIC", runnable);
     }
@@ -112,7 +115,7 @@ public class SyncManager {
         while (!workqueue.isEmpty()) {
             String directory = workqueue.remove(0);
             this.dialog.set_bottom_label(directory);
-            GvfsClient.listDirectory(this.musicUri, directory, subdirs, fileinfos);
+            this.gio.listDirectory(this.musicUri, directory, subdirs, fileinfos);
             this.subdir_set.addAll(subdirs);
             for (FileInfo fileinfo : fileinfos) {
                 fileinfo_map.put(fileinfo.pathname, fileinfo);
@@ -301,16 +304,16 @@ public class SyncManager {
             this.dialog.set_bottom_label(song.media_name);
             String directory = get_parent_directory(song.media_name);
             if (!this.subdir_set.contains(directory)) {
-                GvfsClient.makeDirectory(this.musicUri + "/" + directory);
+                this.gio.makeDirectory(this.musicUri + "/" + directory);
                 this.subdir_set.add(directory);
             }
-            GvfsClient.copyFile(song.filename, this.musicUri + "/" + song.media_name);
+            this.gio.copyFile(song.filename, this.musicUri + "/" + song.media_name);
             current++;
             this.dialog.set_progress(current, total);
         }
         for (String pathname : this.to_delete) {
             this.dialog.set_bottom_label(pathname);
-            GvfsClient.removeFile(this.musicUri + "/" + pathname);
+            this.gio.removeFile(this.musicUri + "/" + pathname);
             current++;
             this.dialog.set_progress(current, total);
         }
