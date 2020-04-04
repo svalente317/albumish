@@ -269,7 +269,7 @@ public class GioClient {
         } else if (this.use_gvfs) {
             String c = args[0];
             list.set(0, c.equals("list") ? "gvfs-ls" : c.equals("copy") ? "gvfs-cp" :
-                c.contentEquals("mkdir") ? "gvfs-mkdir" : c.equals("remove") ? "gvfs-rm" : null);
+                c.equals("mkdir") ? "gvfs-mkdir" : c.equals("remove") ? "gvfs-rm" : null);
         } else {
             return null;
         }
