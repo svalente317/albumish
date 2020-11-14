@@ -306,7 +306,7 @@ public class PlayerThread extends Thread {
      * Tell the player to jump forwards or backwards in the audio stream.
      */
     public void do_audio_jump(float value) {
-        this.target_position = new Float(value);
+        this.target_position = Float.valueOf(value);
     }
 
     /**

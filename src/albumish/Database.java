@@ -65,7 +65,7 @@ public class Database {
         JsonArray songArray = null;
         try {
             FileReader reader = new FileReader(file);
-            JsonElement root = new JsonParser().parse(reader);
+            JsonElement root = JsonParser.parseReader(reader);
             reader.close();
             songArray = root.getAsJsonArray();
         } catch (Exception exception) {

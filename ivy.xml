@@ -1,8 +1,0 @@
-<ivy-module version="2.0">
-  <info organisation="albumish" module="albumish"/>
-  <dependencies>
-    <dependency org="javazoom" name="jlayer" rev="1.0.1"/>
-    <dependency org="com.google.code.gson" name="gson" rev="2.8.5"/>
-    <dependency org="org.imgscalr" name="imgscalr-lib" rev="4.2"/>
-  </dependencies>
-</ivy-module>
