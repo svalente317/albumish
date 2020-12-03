@@ -1,10 +1,10 @@
 PREFIX=$(HOME)/Applications/Albumish.app/Contents
 JARDIR=$(PREFIX)/lib
 
-j1=lib/swt-4.18M1a.jar
+j1=lib/swt-4.17.jar
 j2=lib/gson-2.8.6.jar
 j3=lib/imgscalr-lib-4.2.jar
-j4=lib/jl1.0.1.jar
+j4=lib/jl-1.0.1.jar
 j5=snapshot/jaudiotagger-2.2.6-SNAPSHOT.jar
 
 CLASSPATH = ${j1}:${j2}:${j3}:${j4}:${j5}

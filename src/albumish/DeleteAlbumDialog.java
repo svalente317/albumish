@@ -18,9 +18,9 @@ import org.eclipse.swt.widgets.Shell;
 
 public class DeleteAlbumDialog implements SelectionListener {
 
-    private Jukebox player;
-    private int albumid;
-    private Shell dialog;
+    private final Jukebox player;
+    private final int albumid;
+    private final Shell dialog;
 
     public DeleteAlbumDialog(Jukebox player, int albumid) {
         this.player = player;

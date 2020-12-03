@@ -12,14 +12,14 @@ import java.util.Comparator;
 
 public class AlbumSorter implements Comparator<Integer> {
 
-    public static enum SortType {
+    public enum SortType {
         YEAR_NEWEST,
         YEAR_OLDEST,
         ALBUM,
         ARTIST
     }
 
-    private Database database;
+    private final Database database;
     private SortType sort_type;
 
     public AlbumSorter(Database database) {

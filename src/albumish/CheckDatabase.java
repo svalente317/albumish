@@ -20,7 +20,7 @@ import java.util.TreeSet;
 
 public class CheckDatabase {
 
-    private Database database;
+    private final Database database;
     private File file;
     private boolean default_value;
     private Set<Integer> songids;

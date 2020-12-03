@@ -39,7 +39,7 @@ public class GioClient {
      * @return list of URIs for MTP devices
      */
     public String[] getMtpDeviceList() {
-        String[] command = null;
+        String[] command;
         if (this.use_gio) {
             command = new String[] {"gio", "mount", "-l"};
         } else if (this.use_gvfs) {
@@ -90,7 +90,7 @@ public class GioClient {
         } catch (Exception exception) {
             System.err.println("Failed to clean up process: " + exception);
         }
-        return results.toArray(new String[results.size()]);
+        return results.toArray(new String[0]);
     }
 
     public static class FileInfo {

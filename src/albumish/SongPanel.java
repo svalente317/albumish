@@ -79,9 +79,9 @@ public class SongPanel implements SelectionListener {
             }
             cnum++;
             if (song.duration > 0) {
-                int min = (int) (song.duration / 60);
+                int min = song.duration / 60;
                 int sec = song.duration % 60;
-                String txt = Integer.toString(min) + ":" + (sec < 10 ? "0" : "") + sec;
+                String txt = min + ":" + (sec < 10 ? "0" : "") + sec;
                 item.setText(cnum, txt);
             }
             cnum++;
@@ -106,8 +106,13 @@ public class SongPanel implements SelectionListener {
         for (TableColumn column : this.table.getColumns()) {
             column.pack();
         }
+        for (TableColumn column : this.table.getColumns()) {
+            int width = column.getWidth();
+            column.setWidth(width+5);
+        }
         this.table.deselectAll();
         this.table.setRedraw(true);
+        this.table.redraw();
     }
 
     public void update_database() {

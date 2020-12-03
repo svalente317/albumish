@@ -76,7 +76,7 @@ public class Gallery implements Runnable {
                 while (this.workstack.size() > 10) {
                     this.workstack.removeFirst();
                 }
-                Integer albumid = this.workstack.takeFirst();
+                int albumid = this.workstack.takeFirst();
                 if (!this.is_loaded.get(albumid)) {
                     this.is_loaded.set(albumid, true);
                     load_image(albumid);

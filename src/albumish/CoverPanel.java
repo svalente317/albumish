@@ -34,7 +34,7 @@ public class CoverPanel extends Canvas implements
         LOAD_ALBUM_ART,
         EDIT_ALBUM_TAGS,
         DELETE_ALBUM_FROM_LIBRARY
-    };
+    }
 
     private static final int text_spacing = 12;
 

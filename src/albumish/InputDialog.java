@@ -19,11 +19,11 @@ import org.eclipse.swt.widgets.Text;
 
 public class InputDialog implements SelectionListener {
 
-    public static interface InputRunnable {
-        public void run(String input);
+    public interface InputRunnable {
+        void run(String input);
     }
 
-    private static enum Cmd {
+    private enum Cmd {
         ENTRY,
         OK_BUTTON,
         CANCEL_BUTTON
@@ -87,7 +87,7 @@ public class InputDialog implements SelectionListener {
 
     @Override
     public void widgetDefaultSelected(SelectionEvent event) {
-        if ((Cmd) event.widget.getData() == Cmd.ENTRY) {
+        if (event.widget.getData() == Cmd.ENTRY) {
             process_ok_button();
         }
     }

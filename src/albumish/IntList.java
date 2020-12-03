@@ -78,9 +78,7 @@ public class IntList {
     public int[] finish() {
         if (this.list.length > this.size) {
             int[] trunc = new int[this.size];
-            for (int idx = 0; idx < this.size; idx++) {
-                trunc[idx] = this.list[idx];
-            }
+            System.arraycopy(this.list, 0, trunc, 0, this.size);
             this.list = trunc;
         }
         return this.list;

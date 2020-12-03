@@ -37,7 +37,7 @@ import org.jaudiotagger.tag.images.Artwork;
 public class ImageConverter {
 
     static BufferedImage convertToAWT(ImageData data) {
-        ColorModel colorModel = null;
+        ColorModel colorModel;
         PaletteData palette = data.palette;
         if (palette.isDirect) {
             colorModel = new DirectColorModel(data.depth, palette.redMask, palette.greenMask,

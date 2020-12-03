@@ -41,7 +41,7 @@ public class Jukebox implements SelectionListener {
         DELETE_SELECTION,
         RANDOM_PLAYLIST,
         EXPORT_SONGS
-    };
+    }
 
     // Draw unselected albums in a square of 225x225.
     // Draw the selected album in a square of 300x300.

@@ -252,7 +252,7 @@ public class TopPanel extends Composite implements SelectionListener {
 
     @Override
     public void widgetDefaultSelected(SelectionEvent event) {
-        if ((Cmd) event.widget.getData() == Cmd.FILTER_ENTRY) {
+        if (event.widget.getData() == Cmd.FILTER_ENTRY) {
             widgetSelected(event);
         }
     }

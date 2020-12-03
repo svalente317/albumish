@@ -1,7 +1,16 @@
+Edit Tags
+- If sort key changed then resort
+- Expose Album in cover panel
+- Rewrite Album song panel if necessary
+- Rewrite Playlist song panel if necessary?
+
+- jump to playing song in two playlists and cover panel
+- Update song panel when song has no year
 - Show ellipsis in FilterPanel
 - Drag and drop - playlists, songs, albums
 - Right click menu on songs and playlists
 - Check All / Uncheck All
+- Delete playlist
 
 CoverPanel
 - Click and drag to scroll

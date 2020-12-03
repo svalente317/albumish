@@ -1,3 +1,5 @@
 bin
 lib
 albumish.jar
+.idea
+albumish.iml

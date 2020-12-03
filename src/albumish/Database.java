@@ -62,7 +62,7 @@ public class Database {
         this.directory = directory;
         this.filename = filename;
         File file = new File(directory, filename);
-        JsonArray songArray = null;
+        JsonArray songArray;
         try {
             FileReader reader = new FileReader(file);
             JsonElement root = JsonParser.parseReader(reader);
@@ -160,9 +160,7 @@ public class Database {
         Album album = this.album_list.get(song.albumid);
         int size = album.song_list == null ? 0 : album.song_list.length;
         int[] new_list = new int[size + 1];
-        for (int idx = 0; idx < size; idx++) {
-            new_list[idx] = album.song_list[idx];
-        }
+        System.arraycopy(album.song_list, 0, new_list, 0, size);
         new_list[size] = song.id;
         for (int idx = new_list.length - 2; idx >= 0; idx--) {
             Song other = this.song_list.get(new_list[idx]);

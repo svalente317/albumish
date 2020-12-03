@@ -148,15 +148,13 @@ public class EditTagsDialog implements SelectionListener {
                 }
             }
         }
+        Artist artist = database.artist_list.get(album.artistid);
+        if (artist.name != null) {
+            this.artist_entry.setText(artist.name);
+        }
         if (artistid == 0 || artistid != album.artistid) {
-            Artist artist = database.artist_list.get(album.artistid);
-            if (artist.name != null) {
-                this.artist_entry.setText(artist.name);
-            }
             this.album_artist_button.setSelection(true);
         } else {
-            Artist artist = database.artist_list.get(album.artistid);
-            this.artist_entry.setText(artist.name);
             this.track_artist_button.setSelection(true);
         }
         this.album_entry.setText(album.name);
@@ -270,16 +268,15 @@ public class EditTagsDialog implements SelectionListener {
                     if (audio != null) {
                         audio.commit();
                     }
+                    // After successfully writing mp3 file, update database.
+                    if (year > 0) {
+                        song.year = year;
+                    }
+                    if (artistid > 0) {
+                        song.artistid = artistid;
+                    }
                 } catch (Exception exception) {
                     System.err.println(exception.toString());
-                    continue;
-                }
-                // After successfully writing mp3 file, update database.
-                if (year > 0) {
-                    song.year = year;
-                }
-                if (artistid > 0) {
-                    song.artistid = artistid;
                 }
             }
         }
