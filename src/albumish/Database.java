@@ -160,7 +160,9 @@ public class Database {
         Album album = this.album_list.get(song.albumid);
         int size = album.song_list == null ? 0 : album.song_list.length;
         int[] new_list = new int[size + 1];
-        System.arraycopy(album.song_list, 0, new_list, 0, size);
+        if (size > 0) {
+            System.arraycopy(album.song_list, 0, new_list, 0, size);
+        }
         new_list[size] = song.id;
         for (int idx = new_list.length - 2; idx >= 0; idx--) {
             Song other = this.song_list.get(new_list[idx]);

@@ -10,7 +10,7 @@ top=`cd $bindir/..; pwd -P`
 
 classpath=""
 for jar in $JARS; do
-    filename="${top}"/lib/`basename $jar`
+    filename="${top}/${jar}"
     test -f "$filename" || echo "${filename}: not found"
     test -n "$classpath" && classpath="${classpath}:"
     classpath="${classpath}${filename}"
