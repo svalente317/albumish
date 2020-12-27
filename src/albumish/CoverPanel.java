@@ -166,7 +166,7 @@ public class CoverPanel extends Canvas implements
             this.mouse_down_idx = 0;
             break;
         case EDIT_ALBUM_TAGS:
-            new EditTagsDialog(getShell(), this.player.database, albumid);
+            new EditTagsDialog(this.player, albumid);
             break;
         case DELETE_ALBUM_FROM_LIBRARY:
             new DeleteAlbumDialog(this.player, albumid);

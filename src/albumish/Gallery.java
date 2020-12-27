@@ -151,6 +151,8 @@ public class Gallery implements Runnable {
         Song song = this.player.database.song_list.get(songid);
         AudioFile audio = AudioFileIO.read(new File(song.filename));
         Tag tag = audio.getTag();
+        // List<Artwork> list = tag.getArtworkList();
+        // return list == null || list.isEmpty() ? null : list.get(list.size()-1);
         return tag.getFirstArtwork();
     }
 
@@ -195,6 +197,12 @@ public class Gallery implements Runnable {
         Album album = this.player.database.album_list.get(albumid);
         File dstfile = get_image_file(album);
         Utils.copy_file(new File(srcfile), dstfile);
+        if (this.is_loaded.size() > albumid) {
+            this.is_loaded.set(albumid, false);
+        }
+    }
+
+    public void invalidate(int albumid) {
         if (this.is_loaded.size() > albumid) {
             this.is_loaded.set(albumid, false);
         }

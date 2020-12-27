@@ -1,9 +1,3 @@
-Edit Tags
-- If sort key changed then resort
-- Expose Album in cover panel
-- Rewrite Album song panel if necessary
-- Rewrite Playlist song panel if necessary?
-
 - jump to playing song in two playlists and cover panel
 - Update song panel when song has no year
 - Show ellipsis in FilterPanel
@@ -31,6 +25,10 @@ PlayistPanel
 - Pulldown menu to rename or delete playlist
 - New playlist - enter name in panel instead of dialog
 - Do not allow Auto-Playlist to be edited
+
+Edit Tags
+- Rewrite Playlist song panel if necessary
+- What if artwork is loaded from external file?
 
 MainWindow
 - Remember window size and mode

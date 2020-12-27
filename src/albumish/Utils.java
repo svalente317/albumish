@@ -186,4 +186,9 @@ public class Utils {
         }
         return changed ? builder.toString() : text;
     }
+
+    public static String basename(String filename) {
+        int idx = filename.lastIndexOf('/');
+        return idx >= 0 ? filename.substring(idx+1) : filename;
+    }
 }

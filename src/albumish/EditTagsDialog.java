@@ -33,7 +33,7 @@ import org.jaudiotagger.tag.images.StandardArtwork;
 
 public class EditTagsDialog implements SelectionListener {
 
-    private Database database;
+    private Jukebox jukebox;
     private int albumid;
     private Shell dialog;
     private Text artist_entry;
@@ -41,13 +41,14 @@ public class EditTagsDialog implements SelectionListener {
     private Button track_artist_button;
     private Text album_entry;
     private Text year_entry;
+    private Label artwork_label;
     private Artwork artwork;
 
-    public EditTagsDialog(Shell main_window, Database database, int albumid) {
-        this.database = database;
+    public EditTagsDialog(Jukebox jukebox, int albumid) {
+        this.jukebox = jukebox;
         this.albumid = albumid;
 
-        this.dialog = new Shell(main_window, SWT.SHELL_TRIM | SWT.MODELESS);
+        this.dialog = new Shell(this.jukebox.main_window, SWT.SHELL_TRIM | SWT.MODELESS);
         this.dialog.setText("Edit Album Tags");
         GridLayout layout = new GridLayout(2, false);
         layout.marginWidth = layout.marginHeight = 20;
@@ -110,8 +111,9 @@ public class EditTagsDialog implements SelectionListener {
         button.setLayoutData(data);
 
         label = new Label(this.dialog, 0);
-        data = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1);
+        data = new GridData(SWT.BEGINNING, SWT.BEGINNING, true, false, 2, 1);
         label.setLayoutData(data);
+        this.artwork_label = label;
 
         Composite button_box = new Composite(this.dialog, 0);
         FillLayout fill_layout = new FillLayout(SWT.HORIZONTAL);
@@ -130,6 +132,7 @@ public class EditTagsDialog implements SelectionListener {
         button.setData(SWT.CANCEL);
         button.addSelectionListener(this);
 
+        Database database = this.jukebox.database;
         Album album = database.album_list.get(albumid);
         int artistid = 0, year = 0;
         boolean initialized = false;
@@ -182,8 +185,10 @@ public class EditTagsDialog implements SelectionListener {
             return;
         }
         if (event.widget.getData() == this) {
-            Album album = this.database.album_list.get(this.albumid);
-            Artist artist = this.database.artist_list.get(album.artistid);
+            // Load artwork into memory but do not edit the MP3 file.
+            Database database = this.jukebox.database;
+            Album album = database.album_list.get(this.albumid);
+            Artist artist = database.artist_list.get(album.artistid);
             String title = "";
             if (artist.name != null) {
                 title = artist.name + " / ";
@@ -200,15 +205,18 @@ public class EditTagsDialog implements SelectionListener {
                 // TODO show error
                 return;
             }
-            // TODO set label
+            this.artwork_label.setText(Utils.basename(filename));
+            this.artwork_label.pack();
+            this.dialog.pack();
         }
     }
 
     private void edit_tags() {
+        Database database = this.jukebox.database;
         String new_artist = this.artist_entry.getText();
         int artistid = 0;
         if (new_artist != null && !new_artist.isEmpty()) {
-            artistid = this.database.get_artistid(new_artist);
+            artistid = database.get_artistid(new_artist);
         }
         boolean is_album_artist = this.album_artist_button.getSelection();
         String new_album = this.album_entry.getText();
@@ -218,7 +226,7 @@ public class EditTagsDialog implements SelectionListener {
             year = Integer.parseInt(text);
         } catch (Exception ignore) {
         }
-        Album album = this.database.album_list.get(this.albumid);
+        Album album = database.album_list.get(this.albumid);
         if (new_album != null && !new_album.isEmpty()) {
             if (new_album.equals(album.name)) {
                 new_album = null;
@@ -235,7 +243,7 @@ public class EditTagsDialog implements SelectionListener {
             album.artistid = artistid;
         }
         for (int songid : album.song_list) {
-            Song song = this.database.song_list.get(songid);
+            Song song = database.song_list.get(songid);
             AudioFile audio = null;
             try {
                 audio = AudioFileIO.read(new File(song.filename));
@@ -245,7 +253,7 @@ public class EditTagsDialog implements SelectionListener {
                         tag = new ID3v22Tag((AbstractTag) tag);
                         audio.setTag(tag);
                     }
-                    // TODO this doesn't work
+                    tag.deleteArtworkField();
                     tag.setField(this.artwork);
                 }
                 if (new_album != null && !new_album.isEmpty()) {
@@ -280,7 +288,13 @@ public class EditTagsDialog implements SelectionListener {
                 }
             }
         }
-        // TODO join albums...?
-        this.database.is_changed = true;
+        database.is_changed = true;
+        if (this.artwork != null) {
+            this.jukebox.gallery.invalidate(this.albumid);
+        }
+        this.jukebox.invalidate_album(this.albumid);
+        this.jukebox.reset_albums();
+        // TODO update playlist panel
+        // TODO what if artwork is loaded from external file?
     }
 }

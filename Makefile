@@ -43,3 +43,6 @@ app: lib/albumish.jar
 	--java-options -XstartOnFirstThread \
 	--main-jar albumish.jar --input lib \
 	--icon src/albumish/icons/CD.icns
+
+run:	all
+	java -XstartOnFirstThread -cp lib/albumish.jar:$(CLASSPATH) albumish.Jukebox
