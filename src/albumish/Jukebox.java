@@ -166,8 +166,8 @@ public class Jukebox implements SelectionListener {
         cascade.setText("&Albums");
         menu = new Menu(shell, SWT.DROP_DOWN);
         cascade.setMenu(menu);
-        addMenuItem(menu, "&Previous Album", "F11", Cmd.PREV_ALBUM, null);
-        addMenuItem(menu, "&Next Album", "F12", Cmd.NEXT_ALBUM, null);
+        addMenuItem(menu, "&Previous Album", "PD", Cmd.PREV_ALBUM, null);
+        addMenuItem(menu, "&Next Album", "PU", Cmd.NEXT_ALBUM, null);
         addMenuItem(menu, "&Jump to Playing Album", "J", Cmd.JUMP_ALBUM, null);
         addMenuItem(menu, "&Load Album Art...", null, Cmd.LOAD_ALBUM_ART, null);
 
@@ -193,8 +193,9 @@ public class Jukebox implements SelectionListener {
             item.setAccelerator(SWT.MOD1 | key.charAt(0));
         }
         if (key != null && key.length() > 1) {
-            label += "\t" + key;
-            item.setAccelerator(key.equals("F11") ? SWT.F11 : key.equals("F12") ? SWT.F12 : 0);
+            //label += "\t" + key;
+            item.setAccelerator(key.equals("PD") ? SWT.PAGE_DOWN :
+                    key.equals("PU") ? SWT.PAGE_UP : 0);
         }
         item.setText(label);
         item.setData(cmd);
