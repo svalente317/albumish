@@ -12,6 +12,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,7 +28,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 
 public class CoverPanel extends Canvas implements
-        PaintListener, ControlListener, SelectionListener, MouseListener {
+        PaintListener, ControlListener, SelectionListener, MouseListener, MouseMoveListener {
 
     private enum Cmd {
         ADD_ALBUM_TO_PLAYLIST,
@@ -37,6 +38,7 @@ public class CoverPanel extends Canvas implements
     }
 
     private static final int text_spacing = 12;
+    private static final int select_box_thickness = 5;
 
     private final Jukebox player;
     private final AlbumSorter sorter;
@@ -47,6 +49,7 @@ public class CoverPanel extends Canvas implements
     private int[] album_list;
     private int panel_width;
     private int mouse_down_idx;
+    private int anchor;
 
     public CoverPanel(Jukebox player, Composite parent) {
         super(parent, SWT.H_SCROLL | SWT.DOUBLE_BUFFERED);
@@ -58,7 +61,9 @@ public class CoverPanel extends Canvas implements
         addPaintListener(this);
         addControlListener(this);
         addMouseListener(this);
+        addMouseMoveListener(this);
         getHorizontalBar().addSelectionListener(this);
+        this.mouse_down_idx = -1;
     }
 
     private void get_sizes_from_gallery() {
@@ -156,6 +161,9 @@ public class CoverPanel extends Canvas implements
         if (command == null) {
             return;
         }
+        if (this.mouse_down_idx < 0) {
+            return;
+        }
         int albumid = this.album_list[this.mouse_down_idx];
         switch (command) {
         case ADD_ALBUM_TO_PLAYLIST:
@@ -201,6 +209,19 @@ public class CoverPanel extends Canvas implements
                             xpos - base, ypos, bounds.width, bounds.height);
                 } else {
                     event.gc.drawRectangle(xpos - base, ypos, width - 1, width - 1);
+                }
+                if (idx == this.mouse_down_idx) {
+                    GC gc = event.gc;
+                    gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
+                    gc.drawRectangle(xpos - base, ypos, width - 1, width - 1);
+                    int np = select_box_thickness;
+                    int minus = 1 + np + np;
+                    gc.drawRectangle(xpos - base + np, ypos + np, width - minus, width - minus);
+                    gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+                    for (int n = 1; n < select_box_thickness; n++) {
+                        minus = 1 + n + n;
+                        gc.drawRectangle(xpos - base + n, ypos + n, width - minus, width - minus);
+                    }
                 }
                 if (!is_selected) {
                     Album album = this.player.database.album_list.get(albumid);
@@ -271,6 +292,7 @@ public class CoverPanel extends Canvas implements
 
     @Override
     public void mouseDown(MouseEvent event) {
+        this.anchor = getHorizontalBar().getSelection() + event.x;
         int idx = get_clicked_idx(event);
         if (idx < 0) {
             return;
@@ -280,37 +302,17 @@ public class CoverPanel extends Canvas implements
             popup_menu(event);
             return;
         }
-        int xpos = this.border_width + idx *
-                (this.border_width + this.image_width);
-        if (idx > this.selected_idx) {
-            xpos += (this.selected_width - this.image_width);
-        }
-        xpos -= getHorizontalBar().getSelection();
-        int width, ypos;
-        if (idx == this.selected_idx) {
-            width = this.selected_width;
-            ypos = this.border_width;
-        } else {
-            width = this.image_width;
-            ypos = this.border_width + (this.selected_width - this.image_width) / 2;
-        }
-        GC gc = new GC(this);
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
-        gc.drawRectangle(xpos, ypos, width - 1, width - 1);
-        gc.drawRectangle(xpos + 3, ypos + 3, width - 7, width - 7);
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        gc.drawRectangle(xpos + 1, ypos + 1, width - 3, width - 3);
-        gc.drawRectangle(xpos + 2, ypos + 2, width - 5, width - 5);
-        gc.dispose();
+        redraw_albums(idx, idx);
     }
 
     @Override
     public void mouseUp(MouseEvent event) {
+        this.anchor = 0;
         int selected = this.mouse_down_idx;
         if (selected < 0) {
             return;
         }
-        this.mouse_down_idx = 0;
+        this.mouse_down_idx = -1;
         int idx = get_clicked_idx(event);
         if (idx == selected && this.selected_idx != selected) {
             select_nth_album(idx);
@@ -335,7 +337,6 @@ public class CoverPanel extends Canvas implements
         }
         int listid = this.player.set_auto_playlist(song_list);
         this.player.play_song(listid, 0);
-        this.mouse_down_idx = 0;
     }
 
     private int get_clicked_idx(MouseEvent event) {
@@ -433,5 +434,19 @@ public class CoverPanel extends Canvas implements
             ypos -= extent.y;
         }
         gc.drawString(text, xpos, ypos);
+    }
+
+    @Override
+    public void mouseMove(MouseEvent event) {
+        if (this.anchor <= 0) {
+            return;
+        }
+        ScrollBar scrollbar = getHorizontalBar();
+        int selection = this.anchor - event.x;
+        if (selection < 0 || selection > scrollbar.getMaximum()) {
+            return;
+        }
+        scrollbar.setSelection(selection);
+        redraw();
     }
 }

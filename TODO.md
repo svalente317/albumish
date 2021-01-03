@@ -1,3 +1,4 @@
+- searchable tags (genre, source, etc.)
 - jump to playing song in two playlists and cover panel
 - Update song panel when song has no year
 - Show ellipsis in FilterPanel
@@ -7,9 +8,7 @@
 - Delete playlist
 
 CoverPanel
-- Click and drag to scroll
 - Accept keyboard focus
-- Page up and down to move scrollbar
 - Cursor left and right to change selection
 - Support make bigger or smaller
 
@@ -29,7 +28,3 @@ PlayistPanel
 Edit Tags
 - Rewrite Playlist song panel if necessary
 - What if artwork is loaded from external file?
-
-MainWindow
-- Remember window size and mode
-- Clean up on exit

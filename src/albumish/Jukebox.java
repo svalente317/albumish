@@ -166,8 +166,8 @@ public class Jukebox implements SelectionListener {
         cascade.setText("&Albums");
         menu = new Menu(shell, SWT.DROP_DOWN);
         cascade.setMenu(menu);
-        addMenuItem(menu, "&Previous Album", "PD", Cmd.PREV_ALBUM, null);
-        addMenuItem(menu, "&Next Album", "PU", Cmd.NEXT_ALBUM, null);
+        addMenuItem(menu, "&Previous Album", "PU", Cmd.PREV_ALBUM, null);
+        addMenuItem(menu, "&Next Album", "PD", Cmd.NEXT_ALBUM, null);
         addMenuItem(menu, "&Jump to Playing Album", "J", Cmd.JUMP_ALBUM, null);
         addMenuItem(menu, "&Load Album Art...", null, Cmd.LOAD_ALBUM_ART, null);
 
