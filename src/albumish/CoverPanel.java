@@ -17,6 +17,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -212,6 +213,7 @@ public class CoverPanel extends Canvas implements
                 }
                 if (idx == this.mouse_down_idx) {
                     GC gc = event.gc;
+                    Color default_color = gc.getForeground();
                     gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
                     gc.drawRectangle(xpos - base, ypos, width - 1, width - 1);
                     int np = select_box_thickness;
@@ -222,6 +224,7 @@ public class CoverPanel extends Canvas implements
                         minus = 1 + n + n;
                         gc.drawRectangle(xpos - base + n, ypos + n, width - minus, width - minus);
                     }
+                    gc.setForeground(default_color);
                 }
                 if (!is_selected) {
                     Album album = this.player.database.album_list.get(albumid);

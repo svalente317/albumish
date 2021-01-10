@@ -24,8 +24,9 @@ public class PlayerThread extends Thread {
     // Display the playing time every 333 milliseconds.
     private static final int UPDATE_PERIOD = 333;
 
-    private Jukebox jukebox;
+    private final Jukebox jukebox;
     private int playing_listid;
+    private int playing_songid;
     private int playing_song_pid;
     private int next_listid;
     private int next_song_pid;
@@ -69,7 +70,7 @@ public class PlayerThread extends Thread {
                 if (playlist == null) {
                     this.playing_listid = -1;
                     this.next_listid = -1;
-                    update_top_panel(null);
+                    update_jukebox(null, 0);
                     continue;
                 }
                 if (this.next_song_pid == 0) {
@@ -79,11 +80,13 @@ public class PlayerThread extends Thread {
                 if (songid <= 0) {
                     this.playing_listid = -1;
                     this.next_listid = -1;
-                    update_top_panel(null);
+                    update_jukebox(null, 0);
                     continue;
                 }
+                int finished_songid = this.playing_songid;
                 Song song = this.jukebox.database.song_list.get(songid);
                 this.playing_listid = this.next_listid;
+                this.playing_songid = songid;
                 this.playing_song_pid = this.next_song_pid;
                 this.next_song_pid = 0;
                 try {
@@ -98,7 +101,7 @@ public class PlayerThread extends Thread {
                     Utils.quietClose(istream);
                     continue;
                 }
-                update_top_panel(song);
+                update_jukebox(song, finished_songid);
                 this.interruption_count = 0;
             }
             this.audio_position = 0;
@@ -180,11 +183,23 @@ public class PlayerThread extends Thread {
      * This is called by the audio thread when it starts playing a new song, and when it reaches the
      * end of the playlist.
      */
-    private void update_top_panel(final Song song) {
+    private void update_jukebox(final Song song, final int finished_songid) {
+        final Jukebox fjb = this.jukebox;
         this.jukebox.main_window.getDisplay().asyncExec(new Runnable() {
             @Override
             public void run() {
                 PlayerThread.this.jukebox.update_top_panel(song);
+                if (song != null) {
+                    boolean update_cover = true;
+                    if (finished_songid > 0) {
+                        // If the user already moved the selection away from the playing song,
+                        // then he's looking at something else, so don't change the selection.
+                        Song finished = fjb.database.song_list.get(finished_songid);
+                        update_cover = song.albumid != finished.albumid &&
+                                fjb.get_selected_albumid() == finished.albumid;
+                    }
+                    PlayerThread.this.jukebox.jump_to_playing_song(update_cover);
+                }
             }
         });
     }

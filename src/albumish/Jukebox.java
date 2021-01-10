@@ -258,22 +258,7 @@ public class Jukebox implements SelectionListener {
             this.cover_panel.select_next_album(+1);
             break;
         case JUMP_ALBUM:
-            int playing_listid = this.player_thread.get_playing_listid();
-            int playing_song_pid = this.player_thread.get_playing_song_pid();
-            if (playing_listid >= 0 && playing_song_pid > 0) {
-                Playlist playlist = this.playlists.get(playing_listid);
-                if (playlist != null) {
-                    int songid = playlist.get_songid_of_pid(playing_song_pid);
-                    if (songid > 0) {
-                        Song song = this.database.song_list.get(songid);
-                        this.cover_panel.select_album(song.albumid);
-                        if (this.playlist_song_panel.get_playlistid() == playing_listid) {
-                            int idx = playlist.get_idx_of_pid(playing_song_pid);
-                            this.playlist_song_panel.select_nth_row(idx);
-                        }
-                    }
-                }
-            }
+            jump_to_playing_song(true);
             break;
         case LOAD_ALBUM_ART:
             on_load_album_art();
@@ -450,6 +435,31 @@ public class Jukebox implements SelectionListener {
     }
 
     /**
+     * Select the playing album in cover_panel, and select the playing song in
+     * playlist_song_panel.
+     */
+    public void jump_to_playing_song(boolean update_cover) {
+        int playing_listid = this.player_thread.get_playing_listid();
+        int playing_song_pid = this.player_thread.get_playing_song_pid();
+        if (playing_listid >= 0 && playing_song_pid > 0) {
+            Playlist playlist = this.playlists.get(playing_listid);
+            if (playlist != null) {
+                if (update_cover) {
+                    int songid = playlist.get_songid_of_pid(playing_song_pid);
+                    if (songid > 0) {
+                        Song song = this.database.song_list.get(songid);
+                        this.cover_panel.select_album(song.albumid);
+                    }
+                }
+                if (this.playlist_song_panel.get_playlistid() == playing_listid) {
+                    int idx = playlist.get_idx_of_pid(playing_song_pid);
+                    this.playlist_song_panel.select_nth_row(idx);
+                }
+            }
+        }
+    }
+
+    /**
      * Called by player_thread.
      */
     public void display_time(int position) {
@@ -520,5 +530,9 @@ public class Jukebox implements SelectionListener {
         this.num_random_playlists++;
         String name = RANDOM_PLAYLIST_PREFIX + this.num_random_playlists;
         this.playlist_panel.new_playlist(name, song_list);
+    }
+
+    public int get_selected_albumid() {
+        return this.cover_panel.get_selected_albumid();
     }
 }
