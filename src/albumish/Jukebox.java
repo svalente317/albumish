@@ -18,11 +18,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 
 public class Jukebox implements SelectionListener {
 
@@ -66,12 +62,12 @@ public class Jukebox implements SelectionListener {
     private final PlayerThread player_thread;
     private int num_random_playlists;
 
-    public static void main(String[] argv) throws Exception {
+    public static void main(String[] argv) {
         new Jukebox().run();
         System.exit(0);
     }
 
-    public Jukebox() throws Exception {
+    public Jukebox() {
         // Initialize the non-graphical objects:
         // database, check_database, playlists, gallery, and filters.
         Display display = new Display();
@@ -99,13 +95,13 @@ public class Jukebox implements SelectionListener {
         this.main_window = new Shell(display);
         this.main_window.setImage(get_icon("CD.png"));
         this.main_window.setText("Albumish");
-        this.main_window.setLayout(new GridLayout(3, false));
+        this.main_window.setLayout(new GridLayout(4, false));
         makeMenuBar(this.main_window);
         this.top_panel = new TopPanel(this, this.main_window);
-        data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+        data = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
         this.top_panel.setLayoutData(data);
         this.cover_panel = new CoverPanel(this, this.main_window);
-        data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+        data = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
         data.heightHint = this.cover_panel.get_height();
         data.widthHint = bounds.width;
         this.cover_panel.setLayoutData(data);
@@ -115,6 +111,9 @@ public class Jukebox implements SelectionListener {
         this.playlist_song_panel = new SongPanel(this, this.main_window, false);
         data = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
         this.playlist_song_panel.getControl().setLayoutData(data);
+        PlaylistControlPanel panel = new PlaylistControlPanel(this, this.main_window);
+        data = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 2);
+        panel.setLayoutData(data);
         this.album_song_panel = new SongPanel(this, this.main_window, true);
         data = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
         this.album_song_panel.getControl().setLayoutData(data);
@@ -155,38 +154,37 @@ public class Jukebox implements SelectionListener {
         cascade.setText("&Library");
         menu = new Menu(shell, SWT.DROP_DOWN);
         cascade.setMenu(menu);
-        addMenuItem(menu, "&Add Folder to Library...", "A", Cmd.ADD_FOLDER, null);
-        addMenuItem(menu, "&Rip CD to Library...", null, Cmd.RIP_CD, null);
-        addMenuItem(menu, "&Sync to Device...", null, Cmd.SYNC_TO_DEVICE, null);
+        addMenuItem(menu, "&Add Folder to Library...", "A", Cmd.ADD_FOLDER);
+        addMenuItem(menu, "&Rip CD to Library...", null, Cmd.RIP_CD);
+        addMenuItem(menu, "&Sync to Device...", null, Cmd.SYNC_TO_DEVICE);
         String label = (platform.startsWith("win") ? "E&xit" : "&Quit");
         String altkey = (platform.equalsIgnoreCase("carbon") ? "Q" : null);
-        addMenuItem(menu, label, altkey, Cmd.QUIT, null);
+        addMenuItem(menu, label, altkey, Cmd.QUIT);
 
         cascade = new MenuItem(menubar, SWT.CASCADE);
         cascade.setText("&Albums");
         menu = new Menu(shell, SWT.DROP_DOWN);
         cascade.setMenu(menu);
-        addMenuItem(menu, "&Previous Album", "PU", Cmd.PREV_ALBUM, null);
-        addMenuItem(menu, "&Next Album", "PD", Cmd.NEXT_ALBUM, null);
-        addMenuItem(menu, "&Jump to Playing Album", "J", Cmd.JUMP_ALBUM, null);
-        addMenuItem(menu, "&Load Album Art...", null, Cmd.LOAD_ALBUM_ART, null);
+        addMenuItem(menu, "&Previous Album", "PU", Cmd.PREV_ALBUM);
+        addMenuItem(menu, "&Next Album", "PD", Cmd.NEXT_ALBUM);
+        addMenuItem(menu, "&Jump to Playing Album", "J", Cmd.JUMP_ALBUM);
+        addMenuItem(menu, "&Load Album Art...", null, Cmd.LOAD_ALBUM_ART);
 
         cascade = new MenuItem(menubar, SWT.CASCADE);
         cascade.setText("&Playlist");
         menu = new Menu(shell, SWT.DROP_DOWN);
         cascade.setMenu(menu);
-        addMenuItem(menu, "&New Playlist...", "N", Cmd.NEW_PLAYLIST, null);
-        addMenuItem(menu, "&Delete Playlist...", null, Cmd.DELETE_PLAYLIST, null);
-        addMenuItem(menu, "Add Selection to &Playlist", "Y", Cmd.ADD_SELECTION, null);
-        addMenuItem(menu, "Delete Selection from Playlist", "X", Cmd.DELETE_SELECTION, null);
-        addMenuItem(menu, "New Random Playlist", null, Cmd.RANDOM_PLAYLIST, null);
-        addMenuItem(menu, "Export Checked Songs...", null, Cmd.EXPORT_SONGS, null);
+        addMenuItem(menu, "&New Playlist...", "N", Cmd.NEW_PLAYLIST);
+        addMenuItem(menu, "&Delete Playlist...", null, Cmd.DELETE_PLAYLIST);
+        addMenuItem(menu, "Add Selection to &Playlist", "Y", Cmd.ADD_SELECTION);
+        addMenuItem(menu, "Delete Selection from Playlist", "X", Cmd.DELETE_SELECTION);
+        addMenuItem(menu, "New Random Playlist", null, Cmd.RANDOM_PLAYLIST);
+        addMenuItem(menu, "Export Checked Songs...", null, Cmd.EXPORT_SONGS);
 
         shell.setMenuBar(menubar);
     }
 
-    private void addMenuItem(Menu menu, String label, String key, Cmd cmd,
-            String iname) {
+    private void addMenuItem(Menu menu, String label, String key, Cmd cmd) {
         MenuItem item = new MenuItem(menu, SWT.PUSH);
         if (key != null && key.length() == 1) {
             label += "\tCtrl+" + key;
@@ -308,7 +306,7 @@ public class Jukebox implements SelectionListener {
         if (albumid >= 0) {
             this.album_song_panel.update_database();
             IntList song_list = this.filter_worker.generate_song_list(albumid);
-            this.album_song_panel.reset(song_list);
+            this.album_song_panel.reset(song_list, -1);
         }
     }
 
@@ -343,7 +341,7 @@ public class Jukebox implements SelectionListener {
             return;
         }
         this.playlist_song_panel.set_playlistid(playlistid);
-        this.playlist_song_panel.reset(playlist.get_song_list());
+        this.playlist_song_panel.reset(playlist.get_song_list(), -1);
     }
 
     /**
@@ -489,20 +487,21 @@ public class Jukebox implements SelectionListener {
         }
     }
 
-    private void add_selection_to_playlist() {
+    public void add_selection_to_playlist() {
         IntList new_songs = this.album_song_panel.get_selection();
         int playlistid = this.playlist_panel.get_selected_playlist();
         if (new_songs.size() == 0 || playlistid < 0) {
             return;
         }
         Playlist playlist = this.playlists.get(playlistid);
+        int start = playlist.get_song_list().size();
         for (int idx = 0; idx < new_songs.size(); idx++) {
             playlist.add(new_songs.get(idx));
         }
-        select_playlist(playlistid);
+        this.playlist_song_panel.reset(playlist.get_song_list(), start);
     }
 
-    private void delete_selection_from_playlist() {
+    public void delete_selection_from_playlist() {
         int playlistid = this.playlist_panel.get_selected_playlist();
         int[] indices = this.playlist_song_panel.get_selection_indices();
         if (playlistid < 0 || indices == null || indices.length == 0) {
@@ -512,7 +511,7 @@ public class Jukebox implements SelectionListener {
         for (int idx = indices.length - 1; idx >= 0; idx--) {
             playlist.remove_song_by_idx(indices[idx]);
         }
-        select_playlist(playlistid);
+        this.playlist_song_panel.reset(playlist.get_song_list(), indices[0]);
     }
 
     private void new_random_playlist() {
@@ -534,5 +533,17 @@ public class Jukebox implements SelectionListener {
 
     public int get_selected_albumid() {
         return this.cover_panel.get_selected_albumid();
+    }
+
+    public void move_selected_item_in_playlist(int delta) {
+        int playlistid = this.playlist_panel.get_selected_playlist();
+        int[] indices = this.playlist_song_panel.get_selection_indices();
+        if (playlistid < 0 || indices == null || indices.length != 1) {
+            return;
+        }
+        int idx = indices[0];
+        Playlist playlist = this.playlists.get(playlistid);
+        playlist.move_song_by_idx(idx, delta);
+        this.playlist_song_panel.reset(playlist.get_song_list(), idx+delta);
     }
 }

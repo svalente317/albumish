@@ -115,4 +115,23 @@ public class Playlist {
             }
         }
     }
+
+    /**
+     * Move a song.
+     */
+    public void move_song_by_idx(int idx, int delta) {
+        if (idx >= this.song_list.size()) {
+            return;
+        }
+        int target = idx + delta;
+        int step = (delta < 0 ? -1 : +1);
+        while (idx != target) {
+            int other = idx + step;
+            if (other < 0 || other >= this.song_list.size()) {
+                return;
+            }
+            this.song_list.swap(idx, other);
+            idx = other;
+        }
+    }
 }

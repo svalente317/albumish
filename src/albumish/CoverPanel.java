@@ -295,7 +295,9 @@ public class CoverPanel extends Canvas implements
 
     @Override
     public void mouseDown(MouseEvent event) {
-        this.anchor = getHorizontalBar().getSelection() + event.x;
+        if (event.button == 1) {
+            this.anchor = getHorizontalBar().getSelection() + event.x;
+        }
         int idx = get_clicked_idx(event);
         if (idx < 0) {
             return;

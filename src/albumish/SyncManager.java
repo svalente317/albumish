@@ -7,7 +7,10 @@
  */
 package albumish;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,9 +83,8 @@ public class SyncManager {
             }
         };
 
-        // TODO find mount point?
         new InputDialog(this.jukebox.main_window, "Sync to Device",
-                "Enter device mount point.", "/media/sal/MUSIC", runnable);
+                "Enter device mount point.", get_mounted_device(), runnable);
     }
 
     private void sync_to_music_uri() {
@@ -326,5 +328,46 @@ public class SyncManager {
     private static String get_parent_directory(String name) {
         int idx = name.lastIndexOf('/');
         return (idx < 0 ? name : name.substring(0, idx));
+    }
+
+    /**
+     * Try to find the mount point of a mounted device.
+     */
+    private String get_mounted_device() {
+        ProcessBuilder pb = new ProcessBuilder("df");
+        Process process;
+        try {
+            process = pb.start();
+        } catch (Exception exception) {
+            return null;
+        }
+        InputStream istream = process.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(istream));
+        String result = null;
+        while (result == null) {
+            try {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                String[] words = line.split(" +");
+                if (words != null && words.length == 9 && words[8].startsWith("/Volumes/")) {
+                    result = words[8];
+                }
+            } catch (Exception exception) {
+                break;
+            }
+        }
+        try {
+            reader.close();
+        } catch (Exception exception) {
+            System.err.println("Failed to close stdout: " + exception);
+        }
+        try {
+            process.waitFor();
+        } catch (Exception exception) {
+            System.err.println("Failed to clean up process: " + exception);
+        }
+        return result;
     }
 }

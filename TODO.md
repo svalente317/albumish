@@ -1,5 +1,4 @@
 - searchable tags (genre, source, etc.)
-- jump to playing song in two playlists and cover panel
 - Update song panel when song has no year
 - Show ellipsis in FilterPanel
 - Drag and drop - playlists, songs, albums
@@ -9,21 +8,15 @@
 
 CoverPanel
 - Accept keyboard focus
-- Cursor left and right to change selection
 - Support make bigger or smaller
 
 SongPanel
 - Drag and drop from album to playlist
-- Column widths and heights
-- Interface to delete songs from playlist
-- Interface to change order of songs in playlist
 - Interface - label "Playlist" and "Album"
 
 PlayistPanel
 - Bold Auto-Playlist
 - Pulldown menu to rename or delete playlist
-- New playlist - enter name in panel instead of dialog
-- Do not allow Auto-Playlist to be edited
 
 Edit Tags
 - Rewrite Playlist song panel if necessary

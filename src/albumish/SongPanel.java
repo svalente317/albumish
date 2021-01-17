@@ -53,7 +53,7 @@ public class SongPanel implements SelectionListener {
         return this.table;
     }
 
-    public void reset(IntList songs) {
+    public void reset(IntList songs, int selected_idx) {
         this.table.setRedraw(false);
         Database database = this.player.database;
         CheckDatabase check_database = this.player.check_database;
@@ -111,6 +111,9 @@ public class SongPanel implements SelectionListener {
             column.setWidth(width+5);
         }
         this.table.deselectAll();
+        if (selected_idx >= 0 && selected_idx < num_songs) {
+            this.table.select(selected_idx);
+        }
         this.table.setRedraw(true);
         this.table.redraw();
     }
