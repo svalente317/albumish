@@ -1,7 +1,7 @@
-PREFIX=$(HOME)/Applications/Albumish.app/Contents
+PREFIX=/usr/local
 JARDIR=$(PREFIX)/lib
 
-j1=lib/swt-4.17.jar
+j1=lib/swt4.jar
 j2=lib/gson-2.8.6.jar
 j3=lib/imgscalr-lib-4.2.jar
 j4=lib/jl-1.0.1.jar
@@ -11,9 +11,9 @@ CLASSPATH = ${j1}:${j2}:${j3}:${j4}:${j5}
 SRCS      = src/albumish/*.java
 TOP       = bin
 
-all:	lib/albumish.jar
+all:	albumish.jar
 
-lib/albumish.jar: compile
+albumish.jar: compile
 	rm -rf $(TOP)/bin/icons
 	cp -r src/albumish/icons $(TOP)/albumish/
 	jar -c -f $@ -C $(TOP) albumish
@@ -22,11 +22,11 @@ compile:
 	javac -Xlint:deprecation -g $(SRCS) -d $(TOP) -cp $(CLASSPATH)
 
 clean:
-	rm -rf lib/albumish.jar bin *~
+	rm -rf albumish.jar bin *~
 
-install: lib/albumish.jar
+install: albumish.jar
 	mkdir -p $(JARDIR)
-	cp lib/albumish.jar $(JARDIR)
+	cp albumish.jar $(JARDIR)
 	cp $(j1) $(JARDIR)
 	cp $(j2) $(JARDIR)
 	cp $(j3) $(JARDIR)
@@ -36,7 +36,7 @@ install: lib/albumish.jar
 	cat template.sh | sed 's+@JARS@+lib/albumish.jar $(j1) $(j2) $(j3) $(j4) $(j5)+' > $(PREFIX)/bin/albumish
 	chmod 755 $(PREFIX)/bin/albumish
 
-app: lib/albumish.jar
+app: albumish.jar
 	jpackage --type app-image --name Albumish \
 	--main-class albumish.Jukebox --app-version 1.0 \
 	--description "Albumish Music Organizer and MP3 Player" \
@@ -45,4 +45,4 @@ app: lib/albumish.jar
 	--icon src/albumish/icons/CD.icns
 
 run:	all
-	java -XstartOnFirstThread -cp lib/albumish.jar:$(CLASSPATH) albumish.Jukebox
+	java -XstartOnFirstThread -cp albumish.jar:$(CLASSPATH) albumish.Jukebox
