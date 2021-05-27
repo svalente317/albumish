@@ -12,12 +12,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 public class Database {
 
@@ -27,20 +24,6 @@ public class Database {
     public List<Album> album_list;
     public List<Song> song_list;
     public boolean is_changed;
-
-    public static class JsonSong {
-        String filename;
-        int mtime;
-        String title;
-        String artist;
-        int year;
-        String album;
-        String album_artist;
-        int track_number;
-        int duration;
-        String bitrate;
-        int add_time;
-    }
 
     /**
      * Create a new Database instance, for loading from a JSON file, or adding songs from mp3 files.
@@ -74,33 +57,25 @@ public class Database {
         }
         Gson gson = new Gson();
         for (JsonElement element : songArray) {
-            JsonSong obj = gson.fromJson(element, JsonSong.class);
-            if (obj.filename == null) {
+            Song song = gson.fromJson(element, Song.class);
+            if (song.filename == null) {
                 continue;
             }
-            add_song(obj);
+            SongInfo obj = gson.fromJson(element, SongInfo.class);
+            add_song(song, obj);
         }
         this.is_changed = false;
         return true;
     }
 
-    public void add_song(JsonSong obj) {
-        Song song = new Song();
+    public void add_song(Song song, SongInfo obj) {
         song.id = this.song_list.size();
-        song.filename = obj.filename;
-        song.mtime = obj.mtime;
-        song.title = obj.title;
         song.artistid = get_artistid(obj.artist);
-        song.year = obj.year;
         int artistid = get_artistid(obj.album_artist);
         if (artistid == 0) {
             artistid = song.artistid;
         }
         song.albumid = get_albumid(obj.album, artistid, song.year);
-        song.track_number = obj.track_number;
-        song.duration = obj.duration;
-        song.bitrate = obj.bitrate;
-        song.add_time = obj.add_time;
         this.song_list.add(song);
         add_song_to_album(song);
         this.is_changed = true;
@@ -182,32 +157,29 @@ public class Database {
         if (!this.is_changed) {
             return;
         }
-        int num_songs = this.song_list.size();
-        List<JsonSong> songArray = new ArrayList<>(num_songs);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonArray songArray = new JsonArray();
         for (Song song : this.song_list) {
             if (song.filename == null) {
                 continue;
             }
-            JsonSong obj = new JsonSong();
-            obj.filename = song.filename;
-            obj.mtime = song.mtime;
-            obj.title = song.title;
-            obj.artist = this.artist_list.get(song.artistid).name;
-            obj.album = this.album_list.get(song.albumid).name;
+            SongInfo info = new SongInfo();
+            info.artist = this.artist_list.get(song.artistid).name;
+            info.album = this.album_list.get(song.albumid).name;
             int artistid = this.album_list.get(song.albumid).artistid;
             if ((artistid > 0) && (artistid != song.artistid)) {
-                obj.album_artist = this.artist_list.get(artistid).name;
+                info.album_artist = this.artist_list.get(artistid).name;
             }
-            obj.track_number = song.track_number;
-            obj.year = song.year;
-            obj.duration = song.duration;
-            obj.bitrate = song.bitrate;
-            obj.add_time = song.add_time;
-            songArray.add(obj);
+            JsonObject obj1 = gson.toJsonTree(info, SongInfo.class).getAsJsonObject();
+            JsonObject obj2 = gson.toJsonTree(song, Song.class).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : obj2.entrySet()) {
+                if (!entry.getKey().endsWith("id")) {
+                    obj1.add(entry.getKey(), entry.getValue());
+                }
+            }
+            songArray.add(obj1);
         }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String text = gson.toJson(songArray);
-        songArray = null;
         File file = new File(this.directory, this.filename);
         FileWriter writer = null;
         try {

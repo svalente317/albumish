@@ -11,5 +11,9 @@ public class Song {
     public int year;
     public int duration;
     public String bitrate;
+    public String bpm;
+    public String id3;
+    public String encoder;
+    public String encoderVersion;
     public int add_time;
 }

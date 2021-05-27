@@ -8,7 +8,6 @@
 package albumish;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -159,35 +158,6 @@ public class Gallery implements Runnable {
 
     public boolean audio_file_has_artwork(int songid) throws Exception {
         return get_audio_file_artwork(songid) != null;
-    }
-
-    /**
-     * Output missing and extra album cover images.
-     */
-    public void analyze_database() {
-        try {
-            FileWriter writer = new FileWriter("/home/sal/database.txt");
-            Database database = this.player.database;
-            for (int idx = 1; idx < database.album_list.size(); idx++) {
-                Album album = database.album_list.get(idx);
-                String artist_name = database.artist_list.get(album.artistid).name;
-                boolean has_image = false;
-                try {
-                    has_image = audio_file_has_artwork(album.song_list[0]);
-                } catch (Exception ignore) {
-                }
-                File file = get_image_file(album);
-                boolean has_file = file.exists();
-                if (!has_image && !has_file) {
-                    writer.write("none: " + artist_name + " / " + album.name + "\n");
-                }
-                if (has_image && has_file) {
-                    writer.write("both: " + artist_name + " / " + album.name + "\n");
-                }
-            }
-            writer.close();
-        } catch (Exception e) {
-        }
     }
 
     /**

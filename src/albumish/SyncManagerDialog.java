@@ -21,9 +21,9 @@ public class SyncManagerDialog implements SelectionListener {
 
     private static final int TEXTBOX_NUM_COLUMNS = 120;
     private static final int TEXTBOX_NUM_LINES = 10;
-    private Shell dialog;
-    private Text textbox;
-    private SyncManager sync_manager;
+    private final Shell dialog;
+    private final Text textbox;
+    private final SyncManager sync_manager;
 
     public SyncManagerDialog(Shell main_window, String header, String description,
             SyncManager sync_manager) {

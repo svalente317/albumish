@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="/usr/share/java/swt4.jar"/>
-	<classpathentry kind="lib" path="/usr/share/java/gson-2.8.5.jar"/>
+	<classpathentry kind="lib" path="/home/sal/src/albumish/lib/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/imgscalr-lib-4.2.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/jl-1.0.1.jar"/>
 	<classpathentry kind="lib" path="snapshot/jaudiotagger-2.2.6-SNAPSHOT.jar"/>

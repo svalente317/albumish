@@ -17,6 +17,8 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.id3.ID3v1Tag;
 
 public class AddToLibraryManager {
 
@@ -81,9 +83,11 @@ public class AddToLibraryManager {
             if (this.pathname == null) {
                 break;
             }
-            Database.JsonSong song = read_id3_tags(filename);
-            if (song != null && song.title != null) {
-                database.add_song(song);
+            Song song = new Song();
+            SongInfo obj = new SongInfo();
+            read_id3_tags(filename, song, obj);
+            if (song.title != null) {
+                database.add_song(song, obj);
             }
             this.done_count++;
             this.dialog.set_progress(this.file_count, this.done_count);
@@ -97,26 +101,28 @@ public class AddToLibraryManager {
         });
     }
 
-    private Database.JsonSong read_id3_tags(String filename) {
+    private void read_id3_tags(String filename, Song song, SongInfo obj) {
         File file = new File(filename);
         AudioFile audio;
         try {
             audio = AudioFileIO.read(file);
         } catch (Exception exception) {
             System.err.println(exception.toString());
-            return null;
+            return;
         }
         Tag tag = audio.getTag();
-        Database.JsonSong song = new Database.JsonSong();
         song.filename = filename;
         song.mtime = (int) (file.lastModified() / 1000L);
         if (tag != null) {
             song.title = normalize(tag.getFirst(FieldKey.TITLE));
-            song.artist = normalize(tag.getFirst(FieldKey.ARTIST));
-            song.year = Utils.parseInt(tag.getFirst(FieldKey.YEAR));
-            song.album = normalize(tag.getFirst(FieldKey.ALBUM));
-            song.album_artist = normalize(tag.getFirst(FieldKey.ALBUM_ARTIST));
+            obj.artist = normalize(tag.getFirst(FieldKey.ARTIST));
+            obj.album = normalize(tag.getFirst(FieldKey.ALBUM));
+            obj.album_artist = normalize(tag.getFirst(FieldKey.ALBUM_ARTIST));
             song.track_number = Utils.parseInt(tag.getFirst(FieldKey.TRACK));
+            song.year = Utils.parseInt(tag.getFirst(FieldKey.YEAR));
+            song.bpm = normalize(tag.getFirst(FieldKey.BPM));
+            song.id3 = getTagClass(tag);
+            song.encoder = getEncoder(song, tag);
         }
         if (song.title == null) {
             song.title = file.getName();
@@ -125,10 +131,69 @@ public class AddToLibraryManager {
         song.duration = header.getTrackLength();
         song.bitrate = header.getBitRate();
         song.add_time = (int) (System.currentTimeMillis() / 1000L);
-        return song;
     }
 
     private static String normalize(String item) {
         return (item == null || item.isEmpty() ? null : item);
+    }
+
+    private static String getTagClass(Tag tag) {
+        String name = tag.getClass().getSimpleName();
+        int idx = name.lastIndexOf('.');
+        if (idx > 0) {
+            name = name.substring(idx+1);
+        }
+        if (name.endsWith("Tag")) {
+            name = name.substring(0, name.length()-3);
+        }
+        return name;
+    }
+
+    private static String getEncoder(Song song, Tag tag) {
+        String encoder = null;
+        if (!(tag instanceof ID3v1Tag)) {
+            try {
+                encoder = tag.getFirst("TSSE");
+            } catch (Exception dummy) {
+            }
+        }
+        if (encoder != null && encoder.startsWith("LAME ")) {
+            song.encoderVersion = encoder.substring(5);
+            String[] words = song.encoderVersion.split(" ");
+            if (words.length == 4 && words[0].endsWith("bits") && words[1].equals("version")) {
+                song.encoderVersion = "v" + words[2];
+            }
+            return "lame";
+        }
+        String comment = tag.getFirst(FieldKey.COMMENT);
+        if (comment != null && !comment.isEmpty()) {
+            if (comment.startsWith("Amazon.com Song ID: ")) {
+                return "amazon";
+            }
+            if (comment.equals("Created by Grip")) {
+                return "grip";
+            }
+        }
+        encoder = tag.getFirst(FieldKey.ENCODER);
+        if (encoder != null && encoder.startsWith("iTunes ")) {
+            song.encoderVersion = encoder.substring(7);
+            return "itunes";
+        }
+        TagField field = tag.getFirstField("PRIV");
+        if (field != null) {
+            byte[] content = null;
+            try {
+                content = field.getRawContent();
+            } catch (Exception dummy) {
+            }
+            if (content != null) {
+                for (int i = 0; i+2 < content.length; i++) {
+                    if (content[i] == 'W' && content[i+1] == 'M' && content[i+2] == '/') {
+                        return "windows";
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

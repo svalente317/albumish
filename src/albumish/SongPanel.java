@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.TableItem;
 
 public class SongPanel implements SelectionListener {
 
-    private Jukebox player;
-    private Table table;
+    private final Jukebox player;
+    private final Table table;
     private int playlistid;
 
     public SongPanel(Jukebox player, Composite parent, boolean with_checks) {
@@ -28,7 +28,7 @@ public class SongPanel implements SelectionListener {
         int style = (with_checks ? SWT.CHECK : 0);
         this.table = new Table(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | style);
         TableColumn column;
-        column = new TableColumn(this.table, SWT.RIGHT);
+        new TableColumn(this.table, SWT.RIGHT);
         column = new TableColumn(this.table, SWT.LEFT);
         column.setText("Title");
         column = new TableColumn(this.table, SWT.RIGHT);
@@ -39,8 +39,6 @@ public class SongPanel implements SelectionListener {
         column.setText("Album");
         column = new TableColumn(this.table, SWT.LEFT);
         column.setText("Year");
-        // column = new TableColumn(this.table, SWT.LEFT);
-        // column.setText("Bitrate");
         this.table.setHeaderVisible(true);
         this.table.setLinesVisible(true);
         for (TableColumn pcolumn : this.table.getColumns()) {
@@ -69,35 +67,22 @@ public class SongPanel implements SelectionListener {
             Song song = database.song_list.get(songs.get(idx));
             item.setData(song);
             item.setChecked(check_database.get(song.id));
-            int cnum = 0;
-            if (song.track_number > 0) {
-                item.setText(cnum, Integer.toString(song.track_number));
-            }
-            cnum++;
-            if (song.title != null) {
-                item.setText(cnum, song.title);
-            }
-            cnum++;
+            String duration = null;
             if (song.duration > 0) {
                 int min = song.duration / 60;
                 int sec = song.duration % 60;
-                String txt = min + ":" + (sec < 10 ? "0" : "") + sec;
-                item.setText(cnum, txt);
+                duration = min + ":" + (sec < 10 ? "0" : "") + sec;
             }
-            cnum++;
-            if (song.artistid > 0) {
-                item.setText(cnum, database.artist_list.get(song.artistid).name);
+            String[] row = new String[]{
+                    song.track_number > 0 ? Integer.toString(song.track_number) : null,
+                    song.title, duration,
+                    song.artistid > 0 ? database.artist_list.get(song.artistid).name : null,
+                    song.albumid > 0 ? database.album_list.get(song.albumid).name : null,
+                    song.year > 0 ? Integer.toString(song.year) : null
+            };
+            for (int cnum = 0; cnum < row.length; cnum++) {
+                item.setText(cnum, row[cnum] == null ? "" : row[cnum]);
             }
-            cnum++;
-            if (song.albumid > 0) {
-                item.setText(cnum, database.album_list.get(song.albumid).name);
-            }
-            cnum++;
-            if (song.year > 0) {
-                item.setText(cnum, Integer.toString(song.year));
-            }
-            cnum++;
-            item.setText(cnum, song.bitrate);
         }
         while (count > num_songs) {
             this.table.remove(count - 1);

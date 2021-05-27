@@ -32,18 +32,18 @@ public class TopPanel extends Composite implements SelectionListener {
         TIME_SCALE
     }
 
-    private Jukebox jukebox;
+    private final Jukebox jukebox;
     private boolean is_play_button;
-    private Image play_icon;
-    private Image pause_icon;
-    private Button play_button;
-    private Label title_label;
-    private Label artist_label;
-    private MySlider time_scale;
-    private Label time_label;
-    private Label duration_label;
-    private Text filter_entry;
-    private Label filter_label;
+    private final Image play_icon;
+    private final Image pause_icon;
+    private final Button play_button;
+    private final Label title_label;
+    private final Label artist_label;
+    private final MySlider time_scale;
+    private final Label time_label;
+    private final Label duration_label;
+    private final Text filter_entry;
+    private final Label filter_label;
 
     public TopPanel(Jukebox jukebox, Composite parent) {
         super(parent, 0);

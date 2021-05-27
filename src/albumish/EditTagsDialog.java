@@ -27,21 +27,21 @@ import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.id3.AbstractID3v1Tag;
 import org.jaudiotagger.tag.id3.AbstractTag;
-import org.jaudiotagger.tag.id3.ID3v22Tag;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.StandardArtwork;
 
 public class EditTagsDialog implements SelectionListener {
 
-    private Jukebox jukebox;
-    private int albumid;
-    private Shell dialog;
-    private Text artist_entry;
-    private Button album_artist_button;
-    private Button track_artist_button;
-    private Text album_entry;
-    private Text year_entry;
-    private Label artwork_label;
+    private final Jukebox jukebox;
+    private final int albumid;
+    private final Shell dialog;
+    private final Text artist_entry;
+    private final Button album_artist_button;
+    private final Button track_artist_button;
+    private final Text album_entry;
+    private final Text year_entry;
+    private final Label artwork_label;
     private Artwork artwork;
 
     public EditTagsDialog(Jukebox jukebox, int albumid) {
@@ -250,7 +250,7 @@ public class EditTagsDialog implements SelectionListener {
                 Tag tag = audio.getTag();
                 if (this.artwork != null) {
                     if (tag instanceof AbstractID3v1Tag) {
-                        tag = new ID3v22Tag((AbstractTag) tag);
+                        tag = new ID3v23Tag((AbstractTag) tag);
                         audio.setTag(tag);
                     }
                     tag.deleteArtworkField();

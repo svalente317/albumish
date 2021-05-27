@@ -12,10 +12,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -73,7 +75,7 @@ public class GioClient {
                 if (words.length == 4 && words[0].startsWith("Mount(") &&
                         words[1].equals("mtp") && words[2].equals("->")) {
                     try {
-                        results.add(URLDecoder.decode(words[3], "UTF-8"));
+                        results.add(URLDecoder.decode(words[3], StandardCharsets.UTF_8));
                     } catch (Exception dummy) {}
                 }
             } else {
@@ -133,7 +135,7 @@ public class GioClient {
                 break;
             }
             String[] values = line.split("\t");
-            if (values == null || values.length != 4) {
+            if (values.length != 4) {
                 System.out.println("invalid line: " + line);
                 continue;
             }
@@ -261,9 +263,7 @@ public class GioClient {
 
     private String[] makeCommand(String...args) {
         List<String> list = new ArrayList<>();
-        for (String arg : args) {
-            list.add(arg);
-        }
+        Collections.addAll(list, args);
         if (this.use_gio) {
             list.add(0, "gio");
         } else if (this.use_gvfs) {

@@ -29,9 +29,9 @@ public class InputDialog implements SelectionListener {
         CANCEL_BUTTON
     }
 
-    private Shell dialog;
-    private Text entry;
-    private InputRunnable runnable;
+    private final Shell dialog;
+    private final Text entry;
+    private final InputRunnable runnable;
 
     public InputDialog(Shell main_window, String title, String prompt, String defval,
             InputRunnable runnable) {
