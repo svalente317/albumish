@@ -14,7 +14,7 @@ TOP       = bin
 all:	albumish.jar
 
 albumish.jar: compile
-	rm -rf $(TOP)/bin/icons
+	rm -rf $(TOP)/albumish/icons
 	cp -r src/albumish/icons $(TOP)/albumish/
 	jar -c -f $@ -C $(TOP) albumish
 
@@ -37,6 +37,7 @@ install: albumish.jar
 	chmod 755 $(PREFIX)/bin/albumish
 
 app: albumish.jar
+	cp albumish.jar lib/
 	jpackage --type app-image --name Albumish \
 	--main-class albumish.Jukebox --app-version 1.0 \
 	--description "Albumish Music Organizer and MP3 Player" \
