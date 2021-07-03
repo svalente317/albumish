@@ -20,6 +20,8 @@ public class SongPanel implements SelectionListener {
 
     private final Jukebox player;
     private final Table table;
+    private boolean show_bitrate;
+    private boolean show_bpm;
     private int playlistid;
 
     public SongPanel(Jukebox player, Composite parent, boolean with_checks) {
@@ -39,6 +41,16 @@ public class SongPanel implements SelectionListener {
         column.setText("Album");
         column = new TableColumn(this.table, SWT.LEFT);
         column.setText("Year");
+        this.show_bitrate = this.player.config.flag("bitrate");
+        this.show_bpm = this.player.config.flag("bpm");
+        if (this.show_bitrate) {
+            column = new TableColumn(this.table, SWT.LEFT);
+            column.setText("bitrate");
+        }
+        if (this.show_bpm) {
+            column = new TableColumn(this.table, SWT.LEFT);
+            column.setText("BPM");
+        }
         this.table.setHeaderVisible(true);
         this.table.setLinesVisible(true);
         for (TableColumn pcolumn : this.table.getColumns()) {
@@ -80,6 +92,15 @@ public class SongPanel implements SelectionListener {
                     song.albumid > 0 ? database.album_list.get(song.albumid).name : null,
                     song.year > 0 ? Integer.toString(song.year) : null
             };
+            if (this.show_bitrate) {
+                if (this.show_bpm) {
+                    row = Utils.addAll(row, song.bitrate, song.bpm);
+                } else {
+                    row = Utils.addAll(row, song.bitrate);
+                }
+            } else if (this.show_bpm) {
+                row = Utils.addAll(row, song.bpm);
+            }
             for (int cnum = 0; cnum < row.length; cnum++) {
                 item.setText(cnum, row[cnum] == null ? "" : row[cnum]);
             }

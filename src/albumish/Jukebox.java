@@ -49,6 +49,7 @@ public class Jukebox implements SelectionListener {
 
     public Database database;
     public CheckDatabase check_database;
+    public Configuration config;
     public PlaylistCollection playlists;
     public Gallery gallery;
     public Shell main_window;
@@ -85,6 +86,7 @@ public class Jukebox implements SelectionListener {
         this.database = new Database();
         this.database.load(directory, "database.json");
         this.check_database = new CheckDatabase(this.database, directory, "checked_songs.list");
+        this.config = new Configuration(directory, "config.json");
         this.playlists = new PlaylistCollection(this.database, directory);
         this.num_random_playlists = this.playlists.get_max_with_prefix(RANDOM_PLAYLIST_PREFIX);
         File gallery_dir = new File(home, "Pictures/covers");

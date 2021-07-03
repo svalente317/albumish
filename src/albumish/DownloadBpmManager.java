@@ -25,11 +25,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.List;
 
-public class DownloadBpmManager implements SelectionListener {
+ public class DownloadBpmManager implements SelectionListener {
 
     private final Jukebox jukebox;
     private final Shell download_dialog;
@@ -157,11 +156,23 @@ public class DownloadBpmManager implements SelectionListener {
         this.artist_id_map = new TreeMap<>();
         this.database = this.jukebox.database;
 
-        for (Album album : this.database.album_list) {
+        final List<Album> album_list = this.database.album_list;
+        Integer[] album_ids = new Integer[this.database.album_list.size()-1];
+        for (int idx = 0; idx < album_ids.length; idx++) {
+            album_ids[idx] = idx+1;
+        }
+        Arrays.sort(album_ids, (i1, i2) -> {
+            Album a1 = album_list.get(i1);
+            Album a2 = album_list.get(i2);
+            int delta = a2.year - a1.year;
+            return delta != 0 ? delta : (i2 - i1);
+        });
+        for (Integer album_id : album_ids) {
             if (this.is_cancelled) {
                 break;
             }
-            if (album == null || album.song_list == null) {
+            Album album = album_list.get(album_id);
+            if (album.song_list == null) {
                 continue;
             }
             int count = count_bpm_songs(album);
@@ -169,12 +180,9 @@ public class DownloadBpmManager implements SelectionListener {
             if (count > 0) {
                 continue;
             }
-            String artist_name = this.database.artist_list.get(album.artistid).name;
-            if (!artist_name.equals("Van Morrison")) {
-                continue;
-            }
             String artist_id = get_artist_id(album.artistid);
-            System.out.println("artist " + artist_name + ": " + artist_id);
+            System.out.println("artist " + this.database.artist_list.get(album.artistid).name +
+                    ": " + artist_id);
             if (artist_id == null) {
                 continue;
             }
@@ -185,11 +193,16 @@ public class DownloadBpmManager implements SelectionListener {
             }
             Map<String, String> recordings = get_recordings(release_id);
             String[] recording_ids = get_song_ids(album, recordings);
-            for (String recording_id : recording_ids) {
+            for (int idx = 0; idx < recording_ids.length; idx++) {
+                String recording_id = recording_ids[idx];
                 if (recording_id != null) {
                     String bpm = get_recording_bpm(recording_id);
-                    System.out.println("song: " + bpm);
-                    // TODO record in database
+                    System.out.println(bpm);
+                    if (bpm != null) {
+                        int songid = album.song_list[idx];
+                        this.database.song_list.get(songid).bpm = bpm;
+                        this.database.is_changed = true;
+                    }
                 }
             }
             update_row(count_bpm_songs(album));
