@@ -55,14 +55,12 @@ public class Utils {
             for (File file : files) {
                 if (file.isDirectory()) {
                     workqueue.add(file);
-                }
-                else if (file.isFile()) {
+                } else if (file.isFile()) {
                     String pathname = file.getAbsolutePath();
                     if (!known_files.contains(pathname)) {
                         results.add(pathname);
                     }
-                }
-                else {
+                } else {
                     System.err.println(file.toString() + ": not a file or directory");
                 }
             }
@@ -80,20 +78,6 @@ public class Utils {
 
     public static boolean isEmpty(String text) {
         return text == null || text.equals("");
-    }
-
-    /**
-     * Append the given name to the given StringBuilder. To make the name a valid filename, drop
-     * quotes and colons, and replace slash and question mark with underscore.
-     */
-    public static void orig_name_to_filename(StringBuilder output, String name) {
-        int size = name.length();
-        for (int idx = 0; idx < size; idx++) {
-            char ch = name.charAt(idx);
-            if (ch != '"' && ch != ':') {
-                output.append(ch == '/' || ch == '?' ? '_' : ch);
-            }
-        }
     }
 
     public static final String BAD_CHARS = "/:?\"";
@@ -163,32 +147,15 @@ public class Utils {
         }
     }
 
-    /**
-     * @return the ascii representation of a string
-     */
-    public static String make_ascii(String text) {
-        StringBuilder builder = new StringBuilder();
-        boolean changed = false;
-        for (char ch : text.toCharArray()) {
-            if (ch >= 32 && ch < 127) {
-                builder.append(ch);
-            } else {
-                changed = true;
-                if (ch == 8217) {
-                    builder.append('\'');
-                } else if (ch == 8220 || ch == 8221) {
-                    builder.append('"');
-                } else {
-                    System.out.println(text + ": char " + (int) ch);
-                    builder.append('?');
-                }
-            }
-        }
-        return changed ? builder.toString() : text;
-    }
-
     public static String basename(String filename) {
         int idx = filename.lastIndexOf('/');
-        return idx >= 0 ? filename.substring(idx+1) : filename;
+        return idx >= 0 ? filename.substring(idx + 1) : filename;
+    }
+
+    public static String[] addAll(String[] array1, String... array2) {
+        String[] joinedArray = new String[array1.length + array2.length];
+        System.arraycopy(array1, 0, joinedArray, 0, array1.length);
+        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
+        return joinedArray;
     }
 }

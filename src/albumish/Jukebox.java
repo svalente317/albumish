@@ -26,6 +26,7 @@ public class Jukebox implements SelectionListener {
         ADD_FOLDER,
         RIP_CD,
         SYNC_TO_DEVICE,
+        DOWNLOAD_BPM,
         QUIT,
         PREV_ALBUM,
         NEXT_ALBUM,
@@ -157,6 +158,7 @@ public class Jukebox implements SelectionListener {
         addMenuItem(menu, "&Add Folder to Library...", "A", Cmd.ADD_FOLDER);
         addMenuItem(menu, "&Rip CD to Library...", null, Cmd.RIP_CD);
         addMenuItem(menu, "&Sync to Device...", null, Cmd.SYNC_TO_DEVICE);
+        addMenuItem(menu, "Download BPM data...", null, Cmd.DOWNLOAD_BPM);
         String label = (platform.startsWith("win") ? "E&xit" : "&Quit");
         String altkey = (platform.equalsIgnoreCase("carbon") ? "Q" : null);
         addMenuItem(menu, label, altkey, Cmd.QUIT);
@@ -245,6 +247,9 @@ public class Jukebox implements SelectionListener {
             break;
         case SYNC_TO_DEVICE:
             new SyncManager().sync_to_device(this);
+            break;
+        case DOWNLOAD_BPM:
+            new DownloadBpmManager(this).run();
             break;
         case QUIT:
             this.main_window.close();
