@@ -44,11 +44,11 @@ public class SongPanel implements SelectionListener {
         this.show_bitrate = this.player.config.flag("bitrate");
         this.show_bpm = this.player.config.flag("bpm");
         if (this.show_bitrate) {
-            column = new TableColumn(this.table, SWT.LEFT);
+            column = new TableColumn(this.table, SWT.RIGHT);
             column.setText("bitrate");
         }
         if (this.show_bpm) {
-            column = new TableColumn(this.table, SWT.LEFT);
+            column = new TableColumn(this.table, SWT.RIGHT);
             column.setText("BPM");
         }
         this.table.setHeaderVisible(true);
@@ -94,12 +94,12 @@ public class SongPanel implements SelectionListener {
             };
             if (this.show_bitrate) {
                 if (this.show_bpm) {
-                    row = Utils.addAll(row, song.bitrate, song.bpm);
+                    row = Utils.addAll(row, song.bitrate, show_bpm(song.bpm));
                 } else {
                     row = Utils.addAll(row, song.bitrate);
                 }
             } else if (this.show_bpm) {
-                row = Utils.addAll(row, song.bpm);
+                row = Utils.addAll(row, show_bpm(song.bpm));
             }
             for (int cnum = 0; cnum < row.length; cnum++) {
                 item.setText(cnum, row[cnum] == null ? "" : row[cnum]);
@@ -197,5 +197,17 @@ public class SongPanel implements SelectionListener {
 
     public void select_nth_row(int idx) {
         this.table.setSelection(idx);
+    }
+
+    private String show_bpm(String bpm) {
+        if (bpm == null) {
+            return null;
+        }
+        double value = Double.parseDouble(bpm);
+        value = value + 0.05;
+        int ivalue = (int)(value * 10);
+        String svalue = Integer.toString(ivalue);
+        int len = svalue.length();
+        return svalue.substring(0, len-1) + "." + svalue.substring(len-1);
     }
 }

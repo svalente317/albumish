@@ -103,6 +103,11 @@ import java.util.List;
             item.setText(0, Integer.toString(album.song_list.length));
             item.setText(1, Integer.toString(found));
             item.setText(2, album.name);
+            for (TableColumn column : table.getColumns()) {
+                column.pack();
+                int width = column.getWidth();
+                column.setWidth(width+5);
+            }
         });
     }
 
@@ -282,6 +287,9 @@ import java.util.List;
      */
     private String get_release_id(String name, String artist_id) throws Exception {
         JsonObject object = get_musicbrainz_object(TYPE_RELEASE, name, TYPE_ARTIST, artist_id);
+        if (object == null) {
+            return null;
+        }
         return object.get("id").getAsString();
     }
 
