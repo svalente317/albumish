@@ -149,6 +149,9 @@ public class FilterWorker {
         if (string_match(song.title, filter.text)) {
             return true;
         }
+        if (string_match(song.tags, filter.text)) {
+            return true;
+        }
         if (song.year > 0) {
             try {
                 if (song.year == Integer.parseInt(filter.text)) {

@@ -219,7 +219,7 @@ public class RipManager implements SelectionListener {
 
     private void rip_cd_with_metadata(MbAlbum album) {
         String home = System.getProperty("user.home");
-        File music_dir = new File(home, "xMusic");
+        File music_dir = new File(home, "mp3");
         StringBuilder builder = new StringBuilder();
         Utils.name_to_dirname(builder, album.artist);
         builder.append('/');

@@ -22,8 +22,9 @@ import org.jaudiotagger.tag.id3.ID3v1Tag;
 
 public class AddToLibraryManager {
 
-    private Jukebox jukebox;
+    public Jukebox jukebox;
     private String pathname;
+    private String tags;
     private ProgressDialog dialog;
     private int file_count;
     private int done_count;
@@ -33,22 +34,17 @@ public class AddToLibraryManager {
      */
     public void add_to_library(Jukebox jukebox) {
         this.jukebox = jukebox;
-
-        InputDialog.InputRunnable runnable = new InputDialog.InputRunnable() {
-            @Override
-            public void run(String input) {
-                add_folder_to_library(input);
-            }
-        };
-        new InputDialog(this.jukebox.main_window, "Add Folder to Library",
-                "Enter Folder to Add to Library.", null, runnable);
+        new AddToLibraryDialog(this);
     }
 
     /**
      * Pop up a progress dialog, and start a background thread to add the folder.
      */
-    private void add_folder_to_library(String pathname) {
+    public void add_folder_to_library(String pathname, String tags) {
         this.pathname = pathname;
+        if (tags != null && !tags.equals("")) {
+            this.tags = tags;
+        }
         this.dialog = new ProgressDialog(this.jukebox.main_window,
                 "Add to Library...", "Processing " + this.pathname + "...");
 
@@ -87,6 +83,7 @@ public class AddToLibraryManager {
             SongInfo obj = new SongInfo();
             read_id3_tags(filename, song, obj);
             if (song.title != null) {
+                song.tags = tags;
                 database.add_song(song, obj);
             }
             this.done_count++;

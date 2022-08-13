@@ -16,4 +16,5 @@ public class Song {
     public String encoder;
     public String encoderVersion;
     public int add_time;
+    public String tags;
 }
