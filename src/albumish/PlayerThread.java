@@ -92,7 +92,7 @@ public class PlayerThread extends Thread {
                 try {
                     FactoryRegistry registry = FactoryRegistry.systemRegistry();
                     this.audio = registry.createAudioDevice();
-                    istream = new FileInputStream(song.filename);
+                    istream = new FileInputStream(this.jukebox.getFile(song));
                     this.bitstream = new Bitstream(istream);
                     this.decoder = new Decoder();
                     this.audio.open(this.decoder);

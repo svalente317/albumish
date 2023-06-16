@@ -141,13 +141,12 @@ public class SyncManager {
             }
             String media_name = generate_media_name(song, this.jukebox.database);
             File cache_file = get_song_file_with_artwork(song, media_name);
-            String song_filename = cache_file != null ?
-                    cache_file.getAbsolutePath() : song.filename;
+            File song_file = cache_file != null ? cache_file : this.jukebox.getFile(song);
             FileInfo fileinfo = fileinfo_map.remove(media_name);
             if (fileinfo == null) {
-                this.to_add.add(new Filenames(song_filename, media_name));
-            } else if (is_modified(song_filename, fileinfo)) {
-                this.to_update.add(new Filenames(song_filename, media_name));
+                this.to_add.add(new Filenames(song_file.getAbsolutePath(), media_name));
+            } else if (is_modified(song_file, fileinfo)) {
+                this.to_update.add(new Filenames(song_file.getAbsolutePath(), media_name));
             }
         }
         for (FileInfo fileinfo : fileinfo_map.values()) {
@@ -232,7 +231,7 @@ public class SyncManager {
             System.out.println(song.filename + ": artwork: " + exception);
             return null;
         }
-        File song_file = new File(song.filename);
+        File song_file = this.jukebox.getFile(song);
         File cache_dir = new File(this.user_home, "cache");
         File cache_file = new File(cache_dir, media_name);
         long timestamp = cache_file.lastModified();
@@ -262,13 +261,12 @@ public class SyncManager {
      * Compare size and modification time of the file on the device to the file on
      * the computer.
      */
-    private static boolean is_modified(String song_filename, FileInfo fileinfo) {
-        File file = new File(song_filename);
+    private static boolean is_modified(File file, FileInfo fileinfo) {
         if (!file.exists()) {
             return false;
         }
         if (file.length() != fileinfo.size) {
-            System.out.println("local=" + song_filename + " device=" + fileinfo.pathname +
+            System.out.println("local=" + file + " device=" + fileinfo.pathname +
                     " localsize=" + file.length() + " ds=" + fileinfo.size);
             return true;
         }

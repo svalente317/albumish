@@ -47,6 +47,7 @@ public class Jukebox implements SelectionListener {
     private static final String RANDOM_PLAYLIST_PREFIX = "Random Playlist ";
     private static final int RANDOM_PLAYLIST_SIZE = 100;
 
+    private String home_directory;
     public Database database;
     public CheckDatabase check_database;
     public Configuration config;
@@ -81,15 +82,15 @@ public class Jukebox implements SelectionListener {
             COVER_SIZES[0] *= 2;
             COVER_SIZES[1] *= 2;
         }
-        String home = System.getProperty("user.home");
-        File directory = new File(home, ".albumish");
+        this.home_directory = System.getProperty("user.home");
+        File directory = new File(this.home_directory, ".albumish");
         this.database = new Database();
         this.database.load(directory, "database.json");
         this.check_database = new CheckDatabase(this.database, directory, "checked_songs.list");
         this.config = new Configuration(directory, "config.json");
         this.playlists = new PlaylistCollection(this.database, directory);
         this.num_random_playlists = this.playlists.get_max_with_prefix(RANDOM_PLAYLIST_PREFIX);
-        File gallery_dir = new File(home, "Pictures/covers");
+        File gallery_dir = new File(this.home_directory, "Pictures/covers");
         this.gallery = new Gallery(this, display, gallery_dir, COVER_SIZES);
         this.filter_worker = new FilterWorker(this.database, this.check_database);
 
@@ -552,5 +553,19 @@ public class Jukebox implements SelectionListener {
         Playlist playlist = this.playlists.get(playlistid);
         playlist.move_song_by_idx(idx, delta);
         this.playlist_song_panel.reset(playlist.get_song_list(), idx+delta);
+    }
+
+    public File getFile(Song song) {
+        return new File(this.home_directory, song.filename);
+    }
+
+    public String getRelativeFilename(String filename) {
+        if (filename.startsWith(this.home_directory)) {
+            filename = filename.substring(this.home_directory.length());
+            if (filename.startsWith("/")) {
+                filename = filename.substring(1);
+            }
+        }
+        return filename;
     }
 }

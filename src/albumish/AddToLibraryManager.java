@@ -79,6 +79,7 @@ public class AddToLibraryManager {
             if (this.pathname == null) {
                 break;
             }
+            filename = this.jukebox.getRelativeFilename(filename);
             Song song = new Song();
             SongInfo obj = new SongInfo();
             read_id3_tags(filename, song, obj);
@@ -99,7 +100,8 @@ public class AddToLibraryManager {
     }
 
     private void read_id3_tags(String filename, Song song, SongInfo obj) {
-        File file = new File(filename);
+        song.filename = filename;
+        File file = this.jukebox.getFile(song);
         AudioFile audio;
         try {
             audio = AudioFileIO.read(file);
@@ -108,7 +110,6 @@ public class AddToLibraryManager {
             return;
         }
         Tag tag = audio.getTag();
-        song.filename = filename;
         song.mtime = (int) (file.lastModified() / 1000L);
         if (tag != null) {
             song.title = normalize(tag.getFirst(FieldKey.TITLE));

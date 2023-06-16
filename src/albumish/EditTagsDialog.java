@@ -246,7 +246,7 @@ public class EditTagsDialog implements SelectionListener {
             Song song = database.song_list.get(songid);
             AudioFile audio = null;
             try {
-                audio = AudioFileIO.read(new File(song.filename));
+                audio = AudioFileIO.read(this.jukebox.getFile(song));
                 Tag tag = audio.getTag();
                 if (this.artwork != null) {
                     if (tag instanceof AbstractID3v1Tag) {

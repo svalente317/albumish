@@ -148,7 +148,7 @@ public class Gallery implements Runnable {
 
     private Artwork get_audio_file_artwork(int songid) throws Exception {
         Song song = this.player.database.song_list.get(songid);
-        AudioFile audio = AudioFileIO.read(new File(song.filename));
+        AudioFile audio = AudioFileIO.read(this.player.getFile(song));
         Tag tag = audio.getTag();
         // List<Artwork> list = tag.getArtworkList();
         // return list == null || list.isEmpty() ? null : list.get(list.size()-1);
