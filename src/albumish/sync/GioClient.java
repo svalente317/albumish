@@ -5,7 +5,7 @@
  *  the terms of the GNU General Public License.  There is no warranty.
  *  See the file "COPYING" for more information.
  */
-package albumish;
+package albumish.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,9 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +22,7 @@ import java.util.List;
  * filesystem. Obviously, this is a bit hacky. It should be pretty easy to drop-in a real java
  * library, if such a library exists.
  */
-public class GioClient {
+public class GioClient implements SyncClient {
     private boolean use_gio;
     private boolean use_gvfs;
 
@@ -95,21 +92,11 @@ public class GioClient {
         return results.toArray(new String[0]);
     }
 
-    public static class FileInfo {
-        String pathname;
-        long size;
-        long timeModified;
-    }
-
     /**
      * Read a directory in GIO. Return its lists of files and subdirectories.
      */
-    public void listDirectory(String rootUri, String directory, List<String> subdirs,
-            List<FileInfo> files) {
-        if (rootUri.startsWith("/")) {
-            listRegularDirectory(rootUri, directory, subdirs, files);
-            return;
-        }
+    public void listDirectory(String directory, List<String> subdirs, List<FileInfo> files) {
+        String rootUri = "TODO FIXME";
         ProcessBuilder pb = new ProcessBuilder(makeCommand("list",
                 "-a", "standard::size,time::modified", rootUri + "/" + directory));
         Process process;
@@ -188,44 +175,10 @@ public class GioClient {
         }
     }
 
-    private void listRegularDirectory(String rootUri, String directory, List<String> subdirs,
-            List<FileInfo> fileinfos) {
-        File[] files = new File(rootUri, directory).listFiles();
-        if (files == null) {
-            return;
-        }
-        if (!directory.isEmpty()) {
-            directory += "/";
-        }
-        for (File file : files) {
-            String pathname = directory + file.getName();
-            if (file.isDirectory()) {
-                subdirs.add(pathname);
-            }
-            else if (file.isFile()) {
-                FileInfo info = new FileInfo();
-                info.pathname = pathname;
-                info.size = file.length();
-                info.timeModified = file.lastModified() / 1000;
-                fileinfos.add(info);
-            }
-        }
-    }
-
     /**
      * Copy a file in GIO.
      */
     public boolean copyFile(String srcUri, String dstUri) {
-        if (dstUri.startsWith("/")) {
-            try {
-                Files.copy(Paths.get(srcUri), Paths.get(dstUri),
-                        StandardCopyOption.REPLACE_EXISTING);
-                return true;
-            } catch (Exception exception) {
-                System.err.println("Failed to copy file: " + exception);
-                return false;
-            }
-        }
         return runProcess(makeCommand("copy", srcUri, dstUri));
     }
 
@@ -233,15 +186,6 @@ public class GioClient {
      * Make a directory and its parent directories in GIO.
      */
     public boolean makeDirectory(String srcUri) {
-        if (srcUri.startsWith("/")) {
-            try {
-                Files.createDirectories(Paths.get(srcUri));
-                return true;
-            } catch (Exception exception) {
-                System.err.println("Failed to make directory: " + exception);
-                return false;
-            }
-        }
         return runProcess(makeCommand("mkdir", "-p", srcUri));
     }
 
@@ -249,15 +193,6 @@ public class GioClient {
      * Remove a file in GIO.
      */
     public boolean removeFile(String dstUri) {
-        if (dstUri.startsWith("/")) {
-            try {
-                Files.delete(Paths.get(dstUri));
-                return true;
-            } catch (Exception exception) {
-                System.err.println("Failed to delete file: " + exception);
-                return false;
-            }
-        }
         return runProcess(makeCommand("remove", dstUri));
     }
 

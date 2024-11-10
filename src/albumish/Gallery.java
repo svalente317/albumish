@@ -155,7 +155,6 @@ public class Gallery implements Runnable {
         return tag.getFirstArtwork();
     }
 
-
     public boolean audio_file_has_artwork(int songid) throws Exception {
         return get_audio_file_artwork(songid) != null;
     }

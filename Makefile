@@ -5,11 +5,12 @@ j1=lib/swt4.jar
 j2=lib/gson-2.8.6.jar
 j3=lib/imgscalr-lib-4.2.jar
 j4=lib/jl-1.0.1.jar
-j5=lib/commons-text-1.9.jar
-j6=lib/jaudiotagger-2.2.6-SNAPSHOT.jar
+j5=lib/commons-net-3.11.1.jar
+j6=lib/commons-text-1.9.jar
+j7=lib/jaudiotagger-2.2.6-SNAPSHOT.jar
 
-CLASSPATH = ${j1}:${j2}:${j3}:${j4}:${j5}:${j6}
-SRCS      = src/albumish/*.java
+CLASSPATH = ${j1}:${j2}:${j3}:${j4}:${j5}:${j6}:${j7}
+SRCS      = src/albumish/*.java src/albumish/*/*.java
 TOP       = bin
 
 all:	albumish.jar
@@ -34,8 +35,9 @@ install: albumish.jar
 	cp $(j4) $(JARDIR)
 	cp $(j5) $(JARDIR)
 	cp $(j6) $(JARDIR)
+	cp $(j7) $(JARDIR)
 	mkdir -p $(PREFIX)/bin
-	cat template.sh | sed 's+@JARS@+lib/albumish.jar $(j1) $(j2) $(j3) $(j4) $(j5) $(j6)+' > $(PREFIX)/bin/albumish
+	cat template.sh | sed 's+@JARS@+lib/albumish.jar $(j1) $(j2) $(j3) $(j4) $(j5) $(j6) $(j7)+' > $(PREFIX)/bin/albumish
 	chmod 755 $(PREFIX)/bin/albumish
 
 app: albumish.jar

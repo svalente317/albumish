@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,19 +20,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import albumish.sync.*;
+import albumish.sync.GioClient;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.images.StandardArtwork;
 
-import albumish.GioClient.FileInfo;
-
 public class SyncManager {
-    public static final String STORAGE_DIR = "Phone";
+    public static final String MUSIC_URI_KEY = "music_uri";
+    public static final String STORAGE_DIR = "Internal shared storage";
     public static final String MUSIC_DIR = "Music";
 
-    private GioClient gio;
     private Jukebox jukebox;
     private String user_home;
     private String musicUri;
@@ -47,6 +48,7 @@ public class SyncManager {
         }
     }
 
+    private SyncClient sync_client;
     private Set<String> subdir_set;
     private List<Filenames> to_add;
     private List<Filenames> to_update;
@@ -56,35 +58,39 @@ public class SyncManager {
      * Start the process of syncing checked songs to device.
      */
     public void sync_to_device(Jukebox jukebox) {
-        this.gio = new GioClient();
+        var gio = new GioClient();
         this.jukebox = jukebox;
         this.user_home = System.getProperty("user.home");
-        String[] device_uris = this.gio.getMtpDeviceList();
-        if (device_uris == null || device_uris.length == 0) {
-            sync_to_mounted_device();
-            return;
+        String[] device_uris = gio.getMtpDeviceList();
+        if (device_uris != null && device_uris.length > 0) {
+            String device_uri = device_uris[0];
+            if (device_uris.length > 1) {
+                System.out.println("Found " + device_uris.length + " MTP devices.");
+                System.out.println("Using " + device_uri);
+            }
+            this.musicUri = device_uri + STORAGE_DIR + "/" + MUSIC_DIR;
         }
-        String device_uri = device_uris[0];
-        if (device_uris.length > 1) {
-            System.out.println("Found " + device_uris.length + " MTP devices.");
-            System.out.println("Using " + device_uri);
+        if (this.musicUri == null) {
+            var mountpoint = get_mounted_device();
+            if (mountpoint != null) {
+                this.musicUri = mountpoint + "/" + MUSIC_DIR;
+            }
         }
-        this.musicUri = device_uri + STORAGE_DIR + "/" + MUSIC_DIR;
-        sync_to_music_uri();
-    }
-
-    private void sync_to_mounted_device() {
-
+        if (this.musicUri == null) {
+            this.musicUri = jukebox.config.get(MUSIC_URI_KEY);
+        }
         InputDialog.InputRunnable runnable = new InputDialog.InputRunnable() {
             @Override
             public void run(String input) {
-                SyncManager.this.musicUri = input + "/" + MUSIC_DIR;
+                var t = SyncManager.this;
+                t.musicUri = input;
+                t.jukebox.config.set(MUSIC_URI_KEY, input);
                 sync_to_music_uri();
             }
         };
 
         new InputDialog(this.jukebox.main_window, "Sync to Device",
-                "Enter device mount point.", get_mounted_device(), runnable);
+                "Enter device mount point.", this.musicUri, runnable);
     }
 
     private void sync_to_music_uri() {
@@ -106,9 +112,35 @@ public class SyncManager {
      * In a background thread, sync to the device, while updating the view.
      */
     private void run_sync_manager() {
+        try {
+            var uri = new URI(this.musicUri);
+            var scheme = uri.getScheme();
+            if (scheme == null) {
+                this.sync_client = new FileSystemClient(uri.getPath());
+            } else if (scheme.equals("ftp")) {
+                var username = uri.getUserInfo();
+                String password = null;
+                if (username != null) {
+                    var idx = username.indexOf(':');
+                    if (idx > 0) {
+                        password = username.substring(idx + 1);
+                        username = username.substring(0, idx);
+                    }
+                }
+                this.sync_client = new FtpClient(uri.getHost(), uri.getPort(),
+                        username, password, uri.getPath());
+            } else if (scheme.equals("mtp")) {
+                // TODO
+            } else {
+                System.out.println("bad scheme: " + scheme);
+                return;
+            }
+        } catch (Exception exception) {
+            System.out.println("uri " + this.musicUri + ": " + exception);
+            return;
+        }
         this.subdir_set = new TreeSet<>();
         Map<String, FileInfo> fileinfo_map = new TreeMap<>();
-
         List<String> workqueue = new ArrayList<>();
         List<String> subdirs = new ArrayList<>();
         List<FileInfo> fileinfos = new ArrayList<>();
@@ -117,7 +149,8 @@ public class SyncManager {
         while (!workqueue.isEmpty()) {
             String directory = workqueue.remove(0);
             this.dialog.set_bottom_label(directory);
-            this.gio.listDirectory(this.musicUri, directory, subdirs, fileinfos);
+            this.sync_client.listDirectory(directory, subdirs, fileinfos);
+            subdirs.remove(".thumbnails");
             this.subdir_set.addAll(subdirs);
             for (FileInfo fileinfo : fileinfos) {
                 fileinfo_map.put(fileinfo.pathname, fileinfo);
@@ -271,7 +304,7 @@ public class SyncManager {
             return true;
         }
         long lastModified = file.lastModified() / 1000;
-        return lastModified > fileinfo.timeModified;
+        return fileinfo.timeModified > 0 && lastModified > fileinfo.timeModified;
     }
 
     /**
@@ -304,16 +337,16 @@ public class SyncManager {
             this.dialog.set_bottom_label(song.media_name);
             String directory = get_parent_directory(song.media_name);
             if (!this.subdir_set.contains(directory)) {
-                this.gio.makeDirectory(this.musicUri + "/" + directory);
+                this.sync_client.makeDirectory(directory);
                 this.subdir_set.add(directory);
             }
-            this.gio.copyFile(song.filename, this.musicUri + "/" + song.media_name);
+            this.sync_client.copyFile(song.filename, song.media_name);
             current++;
             this.dialog.set_progress(current, total);
         }
         for (String pathname : this.to_delete) {
             this.dialog.set_bottom_label(pathname);
-            this.gio.removeFile(this.musicUri + "/" + pathname);
+            this.sync_client.removeFile(pathname);
             current++;
             this.dialog.set_progress(current, total);
         }

@@ -10,6 +10,7 @@ package albumish;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,4 +40,11 @@ public class Configuration {
         JsonElement element = this.object.get(key);
         return element != null ? element.getAsBoolean() : false;
     }
+
+    public void set(String key, String value) {
+        this.object.add(key, new JsonPrimitive(value));
+        this.is_changed = true;
+    }
+
+    // TODO save config on close
 }
